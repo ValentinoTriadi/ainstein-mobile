@@ -141,28 +141,28 @@ const VideoCard = ({
 const CommentItem = ({
 	comment,
 	isReply = false,
-}: { comment: Comment; isReply?: boolean }) => (
-	<VStack className={`${isReply ? "ml-6 mt-2" : "mb-4"}`}>
-		<HStack className="items-start space-x-3">
-			<View className="w-8 h-8 bg-gray-300 rounded-full justify-center items-center">
-				<Text className="text-gray-600 text-sm font-semibold">
-					{comment.userName.charAt(0).toUpperCase()}
-				</Text>
-			</View>
-			<VStack className="flex-1">
-				<Text className="font-semibold text-sm">{comment.userName}</Text>
-				<Text className="text-gray-700 mt-1">{comment.text}</Text>
-				{comment.replies && comment.replies.length > 0 && (
-					<VStack className="mt-2">
-						{comment.replies.map((reply) => (
-							<CommentItem key={reply.id} comment={reply} isReply={true} />
-						))}
-					</VStack>
-				)}
-			</VStack>
-		</HStack>
-	</VStack>
-);
+}: { comment: Comment; isReply?: boolean }) => {
+	const [fontsLoaded] = useFonts({
+		Manrope_400Regular,
+		Manrope_700Bold,
+	})
+
+	return (
+		<VStack className={`${isReply ? "ml-6 mt-2" : "mb-4"}`}>
+			<HStack className="items-start flex gap-x-[12px]">
+				<View className="w-8 h-8 bg-gray-300 rounded-full justify-center items-center">
+					<Text className="text-gray-600 text-sm font-semibold">
+						{comment.userName.charAt(0).toUpperCase()}
+					</Text>
+				</View>
+				<VStack className="flex-1 flex flex-col gap-y-[2px]">
+					<Text style={{ fontFamily: "Manrope_700Bold" }}>{comment.userName}</Text>
+					<Text style={{ fontFamily: "Manrope_400Regular" }}>{comment.text}</Text>
+				</VStack>
+			</HStack>
+		</VStack>
+	)
+};
 
 // Comment Bottom Sheet Component
 const CommentBottomSheet = ({
@@ -214,7 +214,7 @@ const CommentBottomSheet = ({
 	if (!isVisible || !video) return null;
 
 	return (
-		<View className="absolute inset-0">
+		<View className="absolute inset-0 z-50">
 			{/* Backdrop */}
 			<TouchableOpacity
 				className="flex-1 bg-black/50"
@@ -235,8 +235,8 @@ const CommentBottomSheet = ({
 				<View className="w-12 h-1 bg-gray-300 rounded-full self-center mt-3 mb-4" />
 
 				{/* Header */}
-				<VStack className="px-4 border-b border-gray-200 pb-4">
-					<Text className="text-lg font-semibold text-center">
+				<VStack className="px-4 pb-4">
+					<Text className="text-lg font-semibold text-center" style={{ fontFamily: "Manrope_700Bold" }}>
 						Comments ({video.comments.length})
 					</Text>
 				</VStack>
