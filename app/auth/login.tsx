@@ -14,9 +14,12 @@ import { useAuthStore } from "../../store/authStore";
 import Constants from "expo-constants";
 import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
 
+import { useRouter } from "expo-router";
+
 const authUrl = Constants.expoConfig?.extra?.authUrl;
 
 export default function LoginScreen() {
+	const router = useRouter()
 	const [fontsLoaded] = useFonts({
 		Manrope_400Regular,
 		Manrope_700Bold,
@@ -24,22 +27,27 @@ export default function LoginScreen() {
 
 	const { setLoading } = useAuthStore();
 
-	const handleGoogleLogin = async () => {
-		try {
-			console.log("Login button pressed.", authUrl);
-			setLoading(true);
+	// const handleGoogleLogin = async () => {
+	// 	router.push("/video")
+	// 	// try {
+	// 	// 	console.log("Login button pressed.", authUrl);
+	// 	// 	setLoading(true);
 
-			await authClient.signIn.social({
-				provider: "google",
-				callbackURL: "/video",
-			});
-		} catch (error) {
-			console.error("Login error:", error);
-			Alert.alert("Login Failed", "Please try again");
-		} finally {
-			setLoading(false);
-		}
-	};
+	// 	// 	await authClient.signIn.social({
+	// 	// 		provider: "google",
+	// 	// 		callbackURL: "/video",
+	// 	// 	});
+	// 	// } catch (error) {
+	// 	// 	console.error("Login error:", error);
+	// 	// 	Alert.alert("Login Failed", "Please try again");
+	// 	// } finally {
+	// 	// 	setLoading(false);
+	// 	// }
+	// };
+
+	const handleGoogleLogin = () => {
+		router.push("/video")
+	}
 
 	return (
 		<SafeAreaView className="flex-1" style={{ backgroundColor: "#FFFCF5" }}>
@@ -65,15 +73,14 @@ export default function LoginScreen() {
 							style={{ color: "#808080", fontSize: 20, fontFamily: "Manrope_400Regular" }}
 						>
 							Turn any topic into a smart learning experience with AI-generated
-							lessons, quizzes, and videos.
+							lessons, quizzes, and videos. update
 						</Text>
 					</View>
 				</View>
 
 				<TouchableOpacity
 					onPress={handleGoogleLogin}
-					className="px-[20px] py-[12px] rounded-full flex flex-row items-center justify-center gap-x-[12px]"
-					style={{ backgroundColor: "#1C1C1C" }}
+					className="px-[20px] py-[12px] rounded-full flex flex-row items-center justify-center gap-x-[12px] bg-[#1C1C1C]"
 				>
 					<View className="mr-3">
 						<GoogleIcon size={20} />
