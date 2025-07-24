@@ -9,7 +9,7 @@ import {
 	ScrollView,
 } from "@gluestack-ui/themed";
 import { Heart, MessageCircle, Share } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
 	Dimensions,
@@ -34,28 +34,57 @@ const VideoCard = ({
 	onLike,
 	onComment,
 	height,
+	isActive,
 }: {
 	video: VideoType;
 	onLike: (videoId: string) => void;
 	onComment: (video: VideoType) => void;
 	height: number;
+	isActive: boolean;
 }) => {
 	const [fontsLoaded] = useFonts({
 		Manrope_400Regular,
 		Manrope_700Bold,
 	})
 
+	const [isPaused, setIsPaused] = useState(false);
+	const videoRef = useRef<Video>(null);
+
+	useEffect(() => {
+		if (isActive) {
+			if (isPaused) {
+				videoRef.current?.pauseAsync();
+			} else {
+				videoRef.current?.playAsync();
+			}
+		} else {
+			videoRef.current?.pauseAsync();
+		}
+	}, [isActive, isPaused]);
+
 	return (
-		<View style={{ height }} className="w-full bg-[#1C1C1C] relative">
+		<TouchableOpacity 
+			activeOpacity={1}
+			onPress={() => setIsPaused((prev) => !prev)}
+			style={{ height }} 
+			className="w-full bg-[#1C1C1C] relative"
+		>
 			{/* Video Placeholder - In a real app, this would be a video player */}
 			<Video
+				ref={videoRef}
 				source={require("@/assets/video/test.mp4")}
 				style={{ flex: 1 }}
 				resizeMode={ResizeMode.COVER}
-				shouldPlay
 				isLooping
 				useNativeControls={false}
 			/>
+
+			{/* Optional: show pause/play icon in center */}
+			{isPaused && (
+				<View className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+					<Text className="text-white text-xl">⏸</Text>
+				</View>
+			)}
 
 			{/* Right Side Actions */}
 			<VStack className="absolute right-6 bottom-24 flex flex-col gap-y-[24px]">
@@ -95,19 +124,16 @@ const VideoCard = ({
 			</VStack>
 
 			{/* Bottom Info */}
-			<VStack className="absolute bottom-6 left-4 right-20">
-				<HStack className="items-center mb-3">
-					<Image
-						source={{ uri: video.uploaderAvatar }}
-						className="w-12 h-12 rounded-full mr-3"
-					/>
-					<Text className="text-white font-semibold text-lg">
-						{video.uploaderName}
-					</Text>
-				</HStack>
-				<Text className="text-white text-base mb-2">{video.title}</Text>
+			<VStack className="absolute bottom-6 left-4 right-20 flex flex-col gap-y-[16px]">
+				<Text className="text-white text-[14px]" style={{ fontFamily: "Manrope_400Regular" }}>
+					{video.uploaderName}
+				</Text>
+				<VStack className="flex flex-col gap-y-[2px]">
+					<Text className="text-white text-base text-[16px]" style={{ fontFamily: "Manrope_700Bold" }}>{video.title}</Text>
+					<Text className="text-white text-base text-[16px]" style={{ fontFamily: "Manrope_400Regular" }}>{video.description}</Text>
+				</VStack>
 			</VStack>
-		</View>
+		</TouchableOpacity>
 	);
 };
 
@@ -251,6 +277,7 @@ export default function VideoScreen() {
 	const [videos, setVideos] = useState(dummyVideos);
 	const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
+	const [currentVisibleVideoId, setCurrentVisibleVideoId] = useState<string | null>(null);
 
 	const insets = useSafeAreaInsets();
 	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
@@ -260,6 +287,17 @@ export default function VideoScreen() {
 		Manrope_400Regular,
 		Manrope_700Bold,
 	})
+
+	const viewabilityConfig = {
+		viewAreaCoveragePercentThreshold: 80,
+	};
+
+	const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+		if (viewableItems.length > 0) {
+			setCurrentVisibleVideoId(viewableItems[0].item.id);
+		}
+	}).current;
+
 
 	const [query, setQuery] = useState("");
 
@@ -322,15 +360,19 @@ export default function VideoScreen() {
 						offset: usableHeight * index,
 						index,
 					})}
+					onViewableItemsChanged={onViewableItemsChanged}
+					viewabilityConfig={viewabilityConfig}
 					renderItem={({ item }) => (
 						<VideoCard
 							video={item}
 							onLike={handleLike}
 							onComment={handleComment}
 							height={usableHeight}
+							isActive={item.id === currentVisibleVideoId} // 👈 tambahan prop
 						/>
 					)}
 				/>
+
 
 				<CommentBottomSheet
 					video={selectedVideo}

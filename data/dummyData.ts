@@ -9,6 +9,7 @@ export interface VideoType {
 	id: string;
 	title: string;
 	videoUrl: string;
+	description: string;
 	uploaderName: string;
 	uploaderAvatar: string;
 	likesCount: number;
@@ -66,6 +67,7 @@ export const dummyVideos: VideoType[] = [
 	{
 		id: "1",
 		title: "Introduction to Quantum Physics",
+		description: "Explore the basics of quantum mechanics, including superposition and entanglement.",
 		videoUrl: "https://www.example.com/video1.mp4",
 		uploaderName: "Dr. Sarah Johnson",
 		uploaderAvatar: "https://via.placeholder.com/150x150/007BFF/FFFFFF?text=SJ",
@@ -94,6 +96,7 @@ export const dummyVideos: VideoType[] = [
 	{
 		id: "2",
 		title: "Calculus Made Easy: Derivatives",
+		description: "Learn how to understand and solve derivatives with simple explanations and examples.",
 		videoUrl: "https://www.example.com/video2.mp4",
 		uploaderName: "Prof. Mike Chen",
 		uploaderAvatar: "https://via.placeholder.com/150x150/28A745/FFFFFF?text=MC",
@@ -127,6 +130,7 @@ export const dummyVideos: VideoType[] = [
 	{
 		id: "3",
 		title: "World War 2: Timeline & Key Events",
+		description: "A concise breakdown of the major events and battles that shaped World War 2.",
 		videoUrl: "https://www.example.com/video3.mp4",
 		uploaderName: "History with Emma",
 		uploaderAvatar: "https://via.placeholder.com/150x150/DC3545/FFFFFF?text=HE",
@@ -143,6 +147,7 @@ export const dummyVideos: VideoType[] = [
 	{
 		id: "4",
 		title: "Organic Chemistry: Functional Groups",
+		description: "Master the most important functional groups in organic chemistry with clear visuals.",
 		videoUrl: "https://www.example.com/video4.mp4",
 		uploaderName: "Chem Genius",
 		uploaderAvatar: "https://via.placeholder.com/150x150/FFC107/000000?text=CG",
@@ -159,6 +164,7 @@ export const dummyVideos: VideoType[] = [
 	{
 		id: "5",
 		title: "Spanish Grammar: Subjunctive Mood",
+		description: "Understand when and how to use the subjunctive mood in everyday Spanish.",
 		videoUrl: "https://www.example.com/video5.mp4",
 		uploaderName: "Señora Rodriguez",
 		uploaderAvatar: "https://via.placeholder.com/150x150/6F42C1/FFFFFF?text=SR",
@@ -173,6 +179,7 @@ export const dummyVideos: VideoType[] = [
 		],
 	},
 ];
+
 
 // Dummy Chat Conversations
 export const dummyChats: ChatConversation[] = [
