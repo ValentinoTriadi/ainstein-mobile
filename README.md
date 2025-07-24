@@ -1,2 +1,2 @@
 # ainstein-mobile
-Ainstein backend repository
+Ainstein mobile repository
