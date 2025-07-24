@@ -12,42 +12,47 @@ import { GoogleIcon } from "../../components/GoogleIcon";
 import { authClient } from "../../lib/auth";
 import { useAuthStore } from "../../store/authStore";
 import Constants from "expo-constants";
-import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
+import {
+	useFonts,
+	Manrope_400Regular,
+	Manrope_700Bold,
+} from "@expo-google-fonts/manrope";
 
 import { useRouter } from "expo-router";
 
 const authUrl = Constants.expoConfig?.extra?.authUrl;
 
 export default function LoginScreen() {
-	const router = useRouter()
+	const router = useRouter();
 	const [fontsLoaded] = useFonts({
 		Manrope_400Regular,
 		Manrope_700Bold,
-	})
+	});
 
 	const { setLoading } = useAuthStore();
 
-	// const handleGoogleLogin = async () => {
-	// 	router.push("/video")
-	// 	// try {
-	// 	// 	console.log("Login button pressed.", authUrl);
-	// 	// 	setLoading(true);
+	const handleGoogleLogin = async () => {
+		try {
+			console.log("Login button pressed.", authUrl);
+			setLoading(true);
 
-	// 	// 	await authClient.signIn.social({
-	// 	// 		provider: "google",
-	// 	// 		callbackURL: "/video",
-	// 	// 	});
-	// 	// } catch (error) {
-	// 	// 	console.error("Login error:", error);
-	// 	// 	Alert.alert("Login Failed", "Please try again");
-	// 	// } finally {
-	// 	// 	setLoading(false);
-	// 	// }
+			await authClient.signIn.social({
+				provider: "google",
+				callbackURL: "ainsteinv2fe://video",
+			});
+
+			router.navigate("/video");
+		} catch (error) {
+			console.error("Login error:", error);
+			Alert.alert("Login Failed", "Please try again");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// const handleGoogleLogin = () => {
+	// 	router.push("/video");
 	// };
-
-	const handleGoogleLogin = () => {
-		router.push("/video")
-	}
 
 	return (
 		<SafeAreaView className="flex-1" style={{ backgroundColor: "#FFFCF5" }}>
@@ -60,17 +65,25 @@ export default function LoginScreen() {
 						className="h-[250px] w-[250px]"
 						resizeMode="contain"
 					/>
-					
+
 					<View className="w-full flex flex-col gap-y-[4px] text-center">
-						<Heading 
+						<Heading
 							className="text-center"
-							style={{ color: "#1C1C1C", fontSize: 40, fontFamily: "Manrope_400Regular" }}
+							style={{
+								color: "#1C1C1C",
+								fontSize: 40,
+								fontFamily: "Manrope_400Regular",
+							}}
 						>
 							Ainstein
 						</Heading>
 						<Text
 							className="text-center"
-							style={{ color: "#808080", fontSize: 20, fontFamily: "Manrope_400Regular" }}
+							style={{
+								color: "#808080",
+								fontSize: 20,
+								fontFamily: "Manrope_400Regular",
+							}}
 						>
 							Turn any topic into a smart learning experience with AI-generated
 							lessons, quizzes, and videos. update
@@ -85,7 +98,10 @@ export default function LoginScreen() {
 					<View className="mr-3">
 						<GoogleIcon size={20} />
 					</View>
-					<Text className="text-white text-[16px]" style={{ fontFamily: "Manrope_700Regular" }}>
+					<Text
+						className="text-white text-[16px]"
+						style={{ fontFamily: "Manrope_700Regular" }}
+					>
 						Login with Google
 					</Text>
 				</TouchableOpacity>
