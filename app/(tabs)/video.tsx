@@ -1,6 +1,6 @@
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
-import { Comment, dummyVideos, Video } from "@/data/dummyData";
+import { Comment, dummyVideos, VideoType } from "@/data/dummyData";
 import {
 	Button,
 	ButtonText,
@@ -23,7 +23,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { Search } from "lucide-react-native"
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
+import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
+import { Video, ResizeMode } from 'expo-av';
 
 // Video Card Component
 const VideoCard = ({
@@ -32,62 +35,62 @@ const VideoCard = ({
 	onComment,
 	height,
 }: {
-	video: Video;
+	video: VideoType;
 	onLike: (videoId: string) => void;
-	onComment: (video: Video) => void;
+	onComment: (video: VideoType) => void;
 	height: number;
 }) => {
-	const { top: safeTop } = useSafeAreaInsets(); 
-	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
-	const videoCardHeight = screenHeight - safeTop - tabBarHeight;
+	const [fontsLoaded] = useFonts({
+		Manrope_400Regular,
+		Manrope_700Bold,
+	})
 
 	return (
 		<View style={{ height }} className="w-full bg-[#1C1C1C] relative">
 			{/* Video Placeholder - In a real app, this would be a video player */}
-			<View className="flex-1 bg-gray-800 justify-center items-center">
-				<Text className="text-white text-lg">Video Player</Text>
-				<Text className="text-gray-300 text-sm mt-2">
-					Playing: {video.title}
-				</Text>
-			</View>
+			<Video
+				source={require("@/assets/video/test.mp4")}
+				style={{ flex: 1 }}
+				resizeMode={ResizeMode.COVER}
+				shouldPlay
+				isLooping
+				useNativeControls={false}
+			/>
 
 			{/* Right Side Actions */}
-			<VStack className="absolute right-3 bottom-24 space-y-6">
+			<VStack className="absolute right-6 bottom-24 flex flex-col gap-y-[24px]">
 				{/* Like Button */}
-				<VStack className="items-center">
-					<TouchableOpacity
-						onPress={() => onLike(video.id)}
-						className="p-3 bg-black/50 rounded-full"
-					>
+				<VStack className="items-center flex flex-col gap-y-[4px]">
+					<TouchableOpacity onPress={() => onLike(video.id)}>
 						<Heart
 							size={28}
 							color={video.isLiked ? "#ff3040" : "white"}
 							fill={video.isLiked ? "#ff3040" : "transparent"}
 						/>
 					</TouchableOpacity>
-					<Text className="text-white text-sm font-semibold mt-1">
+					<Text className="text-white" style={{ fontFamily: "Manrope_400Regular" }}>
 						{video.likesCount}
 					</Text>
 				</VStack>
 
 				{/* Comment Button */}
-				<VStack className="items-center">
-					<TouchableOpacity
-						onPress={() => onComment(video)}
-						className="p-3 bg-black/50 rounded-full"
-					>
+				<VStack className="items-center flex flex-col gap-y-[4px]">
+					<TouchableOpacity onPress={() => onComment(video)}>
 						<MessageCircle size={28} color="white" />
 					</TouchableOpacity>
-					<Text className="text-white text-sm font-semibold mt-1">
+					<Text className="text-white" style={{ fontFamily: "Manrope_400Regular" }}>
 						{video.comments.length}
 					</Text>
 				</VStack>
 
 				{/* Share Button */}
-				<VStack className="items-center">
-					<TouchableOpacity className="p-3 bg-black/50 rounded-full">
+				<VStack className="items-center flex flex-col gap-y-[4px]">
+					<TouchableOpacity>
 						<Share size={28} color="white" />
 					</TouchableOpacity>
+					<Text className="text-white" style={{ fontFamily: "Manrope_400Regular" }}>
+						Share
+					</Text>
 				</VStack>
 			</VStack>
 
@@ -141,7 +144,7 @@ const CommentBottomSheet = ({
 	isVisible,
 	onClose,
 }: {
-	video: Video | null;
+	video: VideoType | null;
 	isVisible: boolean;
 	onClose: () => void;
 }) => {
@@ -244,74 +247,21 @@ const CommentBottomSheet = ({
 	);
 };
 
-// // Main Video Screen Component
-// export default function VideoScreen() {
-// 	const [videos, setVideos] = useState(dummyVideos);
-// 	const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-// 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
-
-// 	const handleLike = (videoId: string) => {
-// 		setVideos((prevVideos) =>
-// 			prevVideos.map((video) =>
-// 				video.id === videoId
-// 					? {
-// 							...video,
-// 							isLiked: !video.isLiked,
-// 							likesCount: video.isLiked
-// 								? video.likesCount - 1
-// 								: video.likesCount + 1,
-// 						}
-// 					: video,
-// 			),
-// 		);
-// 	};
-
-// 	const handleComment = (video: Video) => {
-// 		setSelectedVideo(video);
-// 		setIsCommentSheetVisible(true);
-// 	};
-
-// 	const handleCloseComments = () => {
-// 		setIsCommentSheetVisible(false);
-// 		setSelectedVideo(null);
-// 	};
-
-// 	return (
-// 		<SafeAreaView className="flex-1 bg-black">
-// 			<FlatList
-// 				data={videos}
-// 				keyExtractor={(item) => item.id}
-// 				pagingEnabled
-// 				showsVerticalScrollIndicator={false}
-// 				snapToAlignment="start"
-// 				decelerationRate="fast"
-// 				renderItem={({ item }) => (
-// 					<VideoCard
-// 						video={item}
-// 						onLike={handleLike}
-// 						onComment={handleComment}
-// 					/>
-// 				)}  
-// 				contentContainerStyle={{ paddingBottom: 100 }}
-// 			/>
-
-// 			<CommentBottomSheet
-// 				video={selectedVideo}
-// 				isVisible={isCommentSheetVisible}
-// 				onClose={handleCloseComments}
-// 			/>
-// 		</SafeAreaView>
-// 	);
-// }
-
 export default function VideoScreen() {
 	const [videos, setVideos] = useState(dummyVideos);
-	const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+	const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
 
 	const insets = useSafeAreaInsets();
 	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
 	const usableHeight = screenHeight - insets.top - tabBarHeight;
+
+	const [fontsLoaded] = useFonts({
+		Manrope_400Regular,
+		Manrope_700Bold,
+	})
+
+	const [query, setQuery] = useState("");
 
 	const handleLike = (videoId: string) => {
 		setVideos((prevVideos) =>
@@ -329,7 +279,7 @@ export default function VideoScreen() {
 		);
 	};
 
-	const handleComment = (video: Video) => {
+	const handleComment = (video: VideoType) => {
 		setSelectedVideo(video);
 		setIsCommentSheetVisible(true);
 	};
@@ -341,34 +291,54 @@ export default function VideoScreen() {
 
 	return (
 		<SafeAreaView className="flex-1 bg-black">
-			<FlatList
-				data={videos}
-				keyExtractor={(item) => item.id}
-				pagingEnabled
-				showsVerticalScrollIndicator={false}
-				snapToAlignment="start"
-				decelerationRate="fast"
-				snapToInterval={usableHeight}
-				getItemLayout={(_, index) => ({
-					length: usableHeight,
-					offset: usableHeight * index,
-					index,
-				})}
-				renderItem={({ item }) => (
-					<VideoCard
-						video={item}
-						onLike={handleLike}
-						onComment={handleComment}
-						height={usableHeight}
-					/>
-				)}
-			/>
+			<View className="flex-1 relative">
 
-			<CommentBottomSheet
-				video={selectedVideo}
-				isVisible={isCommentSheetVisible}
-				onClose={handleCloseComments}
-			/>
+				<View className="absolute top-[16px] left-0 right-0 z-50 px-5">
+					<HStack className="items-center rounded-[12px] p-[12px] border-white border-[1px]">
+						<Search size={20} color="#FFFFFF" />
+						<Input className="flex-1 ml-2">
+							<InputField
+								value={query}
+								onChangeText={setQuery}
+								placeholder="Search Video"
+								placeholderTextColor="#FFFFFF"
+								className="text-white"
+								style={{ fontFamily: "Manrope_400Regular" }}
+							/>
+						</Input>
+					</HStack>
+				</View>			
+
+				<FlatList
+					data={videos}
+					keyExtractor={(item) => item.id}
+					pagingEnabled
+					showsVerticalScrollIndicator={false}
+					snapToAlignment="start"
+					decelerationRate="fast"
+					snapToInterval={usableHeight}
+					getItemLayout={(_, index) => ({
+						length: usableHeight,
+						offset: usableHeight * index,
+						index,
+					})}
+					renderItem={({ item }) => (
+						<VideoCard
+							video={item}
+							onLike={handleLike}
+							onComment={handleComment}
+							height={usableHeight}
+						/>
+					)}
+				/>
+
+				<CommentBottomSheet
+					video={selectedVideo}
+					isVisible={isCommentSheetVisible}
+					onClose={handleCloseComments}
+				/>
+
+			</View>
 		</SafeAreaView>
 	);
 }

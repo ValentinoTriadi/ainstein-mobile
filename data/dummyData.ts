@@ -5,7 +5,7 @@ export interface Comment {
 	replies?: Comment[];
 }
 
-export interface Video {
+export interface VideoType {
 	id: string;
 	title: string;
 	videoUrl: string;
@@ -62,7 +62,7 @@ export interface UserProfile {
 }
 
 // Dummy Videos Data
-export const dummyVideos: Video[] = [
+export const dummyVideos: VideoType[] = [
 	{
 		id: "1",
 		title: "Introduction to Quantum Physics",
