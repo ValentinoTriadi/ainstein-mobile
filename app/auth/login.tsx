@@ -12,10 +12,16 @@ import { GoogleIcon } from "../../components/GoogleIcon";
 import { authClient } from "../../lib/auth";
 import { useAuthStore } from "../../store/authStore";
 import Constants from "expo-constants";
+import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
 
 const authUrl = Constants.expoConfig?.extra?.authUrl;
 
 export default function LoginScreen() {
+	const [fontsLoaded] = useFonts({
+		Manrope_400Regular,
+		Manrope_700Bold,
+	})
+
 	const { setLoading } = useAuthStore();
 
 	const handleGoogleLogin = async () => {
@@ -37,44 +43,42 @@ export default function LoginScreen() {
 
 	return (
 		<SafeAreaView className="flex-1" style={{ backgroundColor: "#FFFCF5" }}>
-			<View className="flex-1 justify-center items-center px-8">
+			<View className="flex-1 justify-center items-center px-[20px] gap-y-[100px]">
 				{/* App Title */}
-				<View className="items-center mb-4">
+				<View className="flex flex-col items-center gap-y-[40px]">
 					{/* Logo/Icon */}
 					<Image
-						source={require("../../assets/images/logo.png")}
-						className="h-1/2 mb-6"
+						source={require("../../assets/images/albert-einstein.png")}
+						className="h-[250px] w-[250px]"
 						resizeMode="contain"
 					/>
-
-					<Heading
-						className="font-bold mb-6"
-						style={{ color: "#1C1C1C", fontSize: 40 }}
-					>
-						Ainstein
-					</Heading>
-
-					<Text
-						className="text-center px-4"
-						style={{ color: "#808080", fontSize: 20 }}
-					>
-						Turn any topic into a smart learning experience with AI-generated
-						lessons, quizzes, and videos.
-					</Text>
+					
+					<View className="w-full flex flex-col gap-y-[4px] text-center">
+						<Heading 
+							className="text-center"
+							style={{ color: "#1C1C1C", fontSize: 40, fontFamily: "Manrope_400Regular" }}
+						>
+							Ainstein
+						</Heading>
+						<Text
+							className="text-center"
+							style={{ color: "#808080", fontSize: 20, fontFamily: "Manrope_400Regular" }}
+						>
+							Turn any topic into a smart learning experience with AI-generated
+							lessons, quizzes, and videos.
+						</Text>
+					</View>
 				</View>
 
-				{/* Google Login Button */}
 				<TouchableOpacity
 					onPress={handleGoogleLogin}
-					className="w-[70%] py-4 px-2 rounded-xl flex-row items-center justify-center"
+					className="px-[20px] py-[12px] rounded-full flex flex-row items-center justify-center gap-x-[12px]"
 					style={{ backgroundColor: "#1C1C1C" }}
 				>
-					{/* Google Icon */}
 					<View className="mr-3">
 						<GoogleIcon size={20} />
 					</View>
-
-					<Text className="text-white text-lg font-semibold">
+					<Text className="text-white text-[16px]" style={{ fontFamily: "Manrope_700Regular" }}>
 						Login with Google
 					</Text>
 				</TouchableOpacity>
