@@ -21,7 +21,8 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 // Video Card Component
@@ -29,16 +30,22 @@ const VideoCard = ({
 	video,
 	onLike,
 	onComment,
+	height,
 }: {
 	video: Video;
 	onLike: (videoId: string) => void;
 	onComment: (video: Video) => void;
+	height: number;
 }) => {
+	const { top: safeTop } = useSafeAreaInsets(); 
+	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
+	const videoCardHeight = screenHeight - safeTop - tabBarHeight;
+
 	return (
-		<View className="h-screen w-full bg-black relative">
+		<View style={{ height }} className="w-full bg-[#1C1C1C] relative">
 			{/* Video Placeholder - In a real app, this would be a video player */}
 			<View className="flex-1 bg-gray-800 justify-center items-center">
-				<Text className="text-white text-lg">📹 Video Player</Text>
+				<Text className="text-white text-lg">Video Player</Text>
 				<Text className="text-gray-300 text-sm mt-2">
 					Playing: {video.title}
 				</Text>
@@ -237,11 +244,74 @@ const CommentBottomSheet = ({
 	);
 };
 
-// Main Video Screen Component
+// // Main Video Screen Component
+// export default function VideoScreen() {
+// 	const [videos, setVideos] = useState(dummyVideos);
+// 	const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+// 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
+
+// 	const handleLike = (videoId: string) => {
+// 		setVideos((prevVideos) =>
+// 			prevVideos.map((video) =>
+// 				video.id === videoId
+// 					? {
+// 							...video,
+// 							isLiked: !video.isLiked,
+// 							likesCount: video.isLiked
+// 								? video.likesCount - 1
+// 								: video.likesCount + 1,
+// 						}
+// 					: video,
+// 			),
+// 		);
+// 	};
+
+// 	const handleComment = (video: Video) => {
+// 		setSelectedVideo(video);
+// 		setIsCommentSheetVisible(true);
+// 	};
+
+// 	const handleCloseComments = () => {
+// 		setIsCommentSheetVisible(false);
+// 		setSelectedVideo(null);
+// 	};
+
+// 	return (
+// 		<SafeAreaView className="flex-1 bg-black">
+// 			<FlatList
+// 				data={videos}
+// 				keyExtractor={(item) => item.id}
+// 				pagingEnabled
+// 				showsVerticalScrollIndicator={false}
+// 				snapToAlignment="start"
+// 				decelerationRate="fast"
+// 				renderItem={({ item }) => (
+// 					<VideoCard
+// 						video={item}
+// 						onLike={handleLike}
+// 						onComment={handleComment}
+// 					/>
+// 				)}  
+// 				contentContainerStyle={{ paddingBottom: 100 }}
+// 			/>
+
+// 			<CommentBottomSheet
+// 				video={selectedVideo}
+// 				isVisible={isCommentSheetVisible}
+// 				onClose={handleCloseComments}
+// 			/>
+// 		</SafeAreaView>
+// 	);
+// }
+
 export default function VideoScreen() {
 	const [videos, setVideos] = useState(dummyVideos);
 	const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
+
+	const insets = useSafeAreaInsets();
+	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
+	const usableHeight = screenHeight - insets.top - tabBarHeight;
 
 	const handleLike = (videoId: string) => {
 		setVideos((prevVideos) =>
@@ -278,11 +348,18 @@ export default function VideoScreen() {
 				showsVerticalScrollIndicator={false}
 				snapToAlignment="start"
 				decelerationRate="fast"
+				snapToInterval={usableHeight}
+				getItemLayout={(_, index) => ({
+					length: usableHeight,
+					offset: usableHeight * index,
+					index,
+				})}
 				renderItem={({ item }) => (
 					<VideoCard
 						video={item}
 						onLike={handleLike}
 						onComment={handleComment}
+						height={usableHeight}
 					/>
 				)}
 			/>
@@ -295,4 +372,3 @@ export default function VideoScreen() {
 		</SafeAreaView>
 	);
 }
-
