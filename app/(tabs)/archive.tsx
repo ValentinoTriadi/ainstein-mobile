@@ -7,6 +7,7 @@ import { Brain, FileText, Play } from "lucide-react-native";
 import React from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
 
 // Study Kit Card Component
 const StudyKitCard = ({ studyKit }: { studyKit: StudyKit }) => {
@@ -123,6 +124,11 @@ export default function ArchiveScreen() {
 		<StudyKitCard studyKit={item} />
 	);
 
+	const [fontsLoaded] = useFonts({
+		Manrope_400Regular,
+		Manrope_700Bold,
+	})
+
 	return (
 		<SafeAreaView className="flex-1 bg-gray-50">
 			{/* Header */}
@@ -131,7 +137,7 @@ export default function ArchiveScreen() {
 					<Text
 						className="text-gray-900 text-center font-bold"
 						style={{
-							fontFamily: "Satoshi",
+							fontFamily: "Manrope_700Bold",
 							fontSize: 24,
 							lineHeight: 24,
 							color: "#1C1C1C",
@@ -157,7 +163,7 @@ export default function ArchiveScreen() {
 						renderItem={renderStudyKitItem}
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={{
-							gap: 12,
+							gap: 8,
 						}}
 						style={{ flex: 1, backgroundColor: "#FFFCF5" }}
 					/>

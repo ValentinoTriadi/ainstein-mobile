@@ -3,7 +3,7 @@ import { Image, ImageSourcePropType } from 'react-native';
 
 const ICONS: Record<string, ImageSourcePropType> = {
   book_ribbon: require('@/assets/images/icons/BookRibbon.png'),
-  wand_shine: require('@/assets/images/icons/MagicWand.png'),
+  wand_shine: require('@/assets/images/icons/forum.png'),
   book_2: require('@/assets/images/icons/Book2.png'),
   account_circle: require('@/assets/images/icons/ProfileCircle.png'),
 };

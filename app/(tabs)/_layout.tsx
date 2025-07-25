@@ -56,7 +56,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="chat"
           options={{
-            title: 'Generate',
+            title: 'Chat',
             tabBarIcon: ({ color }) => <IconCustom name="wand_shine" tintColor={color} />,
           }}
         />

@@ -27,6 +27,7 @@ import { Search } from "lucide-react-native"
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 import { useFonts, Manrope_400Regular, Manrope_700Bold } from "@expo-google-fonts/manrope"
 import { Video, ResizeMode } from 'expo-av';
+import { useFocusEffect } from "@react-navigation/native";
 
 // Video Card Component
 const VideoCard = ({
@@ -278,6 +279,7 @@ export default function VideoScreen() {
 	const [selectedVideo, setSelectedVideo] = useState<VideoType | null>(null);
 	const [isCommentSheetVisible, setIsCommentSheetVisible] = useState(false);
 	const [currentVisibleVideoId, setCurrentVisibleVideoId] = useState<string | null>(null);
+	const [isFocused, setIsFocused] = useState(true);
 
 	const insets = useSafeAreaInsets();
 	const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 100;
@@ -327,6 +329,16 @@ export default function VideoScreen() {
 		setSelectedVideo(null);
 	};
 
+	useFocusEffect(
+		React.useCallback(() => {
+			setIsFocused(true);
+			return () => {
+				setIsFocused(false);
+			};
+		}, [])
+	);
+
+
 	return (
 		<SafeAreaView className="flex-1 bg-black">
 			<View className="flex-1 relative">
@@ -368,11 +380,10 @@ export default function VideoScreen() {
 							onLike={handleLike}
 							onComment={handleComment}
 							height={usableHeight}
-							isActive={item.id === currentVisibleVideoId} // 👈 tambahan prop
+							isActive={item.id === currentVisibleVideoId && isFocused}
 						/>
 					)}
 				/>
-
 
 				<CommentBottomSheet
 					video={selectedVideo}
