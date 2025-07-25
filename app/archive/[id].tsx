@@ -1,13 +1,14 @@
-import { StudyKit, VideoType } from "@/data/dummyData";
+import { FlashCardType, QuizType, StudyKit, VideoType } from "@/data/dummyData";
 import { authClient } from "@/lib/auth";
 import { Card, HStack, VStack } from "@gluestack-ui/themed";
 import axios from "axios";
 import Constants from "expo-constants";
 import { router, useLocalSearchParams } from "expo-router";
 import { Brain, ChevronRight, FileText, Play } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Image,
   ScrollView,
   Text,
@@ -33,7 +34,7 @@ const VideoItem = ({ video }: { video: VideoType }) => {
 
   return (
     <TouchableOpacity className="mb-4" onPress={handleVideoPress}>
-      <Card className="bg-white shadow-sm p-4 rounded-xl">
+      <Card className="bg-white p-4 rounded-xl">
         <VStack className="space-y-3 flex gap-3">
           <View className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
             <Image
@@ -65,59 +66,146 @@ const VideoItem = ({ video }: { video: VideoType }) => {
 };
 
 // Flashcard Set Component
-const FlashcardSet = ({ flashcard }: { flashcard: any }) => (
-  <TouchableOpacity className="mb-4">
-    <Card className="bg-yellow-50 shadow-sm p-4 rounded-xl border border-yellow-200">
-      <VStack className="items-center">
-        <View className="w-20 h-20 bg-yellow-100 rounded-xl justify-center items-center mb-3">
-          <Image
-            source={{
-              uri: "https://via.placeholder.com/80x80/FCD34D/FFFFFF?text=📚",
-            }}
-            className="w-12 h-12"
-          />
-        </View>
-        <Text className="font-semibold text-gray-900 text-base mb-1">
-          {flashcard.title}
-        </Text>
-        <Text className="text-gray-600 text-sm">
-          {flashcard.cardCount} Cards
-        </Text>
-      </VStack>
-    </Card>
-  </TouchableOpacity>
-);
+const FlashcardSet = ({ flashcard }: { flashcard: FlashCardType }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [flipAnimation] = useState(new Animated.Value(0));
+
+  const handleFlip = () => {
+    Animated.timing(flipAnimation, {
+      toValue: isFlipped ? 0 : 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+    setIsFlipped(!isFlipped);
+  };
+
+  const frontAnimatedStyle = {
+    transform: [
+      {
+        rotateY: flipAnimation.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["0deg", "180deg"],
+        }),
+      },
+    ],
+  };
+
+  const backAnimatedStyle = {
+    transform: [
+      {
+        rotateY: flipAnimation.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["180deg", "360deg"],
+        }),
+      },
+    ],
+  };
+
+  return (
+    <TouchableOpacity className="mb-4" onPress={handleFlip}>
+      <View style={{ height: 200 }}>
+        {/* Front Side */}
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              backfaceVisibility: "hidden",
+            },
+            frontAnimatedStyle,
+          ]}
+        >
+          <Card className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 h-full">
+            <VStack className="items-center justify-center h-full">
+              <View className="w-16 h-16 bg-yellow-100 rounded-xl justify-center items-center mb-3">
+                <Text style={{ fontSize: 24 }}>📚</Text>
+              </View>
+              <Text className="font-bold text-gray-900 text-lg mb-2 text-center">
+                {flashcard.title}
+              </Text>
+              <Text className="text-gray-700 text-base text-center leading-6">
+                {flashcard.frontText}
+              </Text>
+              <Text className="text-yellow-600 text-xs mt-4 font-medium">
+                Tap to reveal answer
+              </Text>
+            </VStack>
+          </Card>
+        </Animated.View>
+
+        {/* Back Side */}
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              backfaceVisibility: "hidden",
+            },
+            backAnimatedStyle,
+          ]}
+        >
+          <Card className="bg-green-50  p-4 rounded-xl border border-green-200 h-full">
+            <VStack className="items-center justify-center h-full">
+              <View className="w-16 h-16 bg-green-100 rounded-xl justify-center items-center mb-3">
+                <Text style={{ fontSize: 24 }}>✓</Text>
+              </View>
+              <Text className="font-bold text-gray-900 text-lg mb-2 text-center">
+                Answer
+              </Text>
+              <Text className="text-gray-700 text-base text-center leading-6">
+                {flashcard.backText ||
+                  "This is the answer to the flashcard question."}
+              </Text>
+              <Text className="text-green-600 text-xs mt-4 font-medium">
+                Tap to flip back
+              </Text>
+            </VStack>
+          </Card>
+        </Animated.View>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 // Quiz Item Component
-const QuizItem = ({ quiz }: { quiz: any }) => (
-  <TouchableOpacity className="mb-4">
-    <Card className="bg-white shadow-sm p-4 rounded-xl">
-      <HStack className="items-center justify-between">
-        <HStack className="items-center space-x-4">
-          <View className="w-12 h-12 bg-blue-100 rounded-lg justify-center items-center">
-            <Image
-              source={{
-                uri: "https://via.placeholder.com/48x48/3B82F6/FFFFFF?text=📝",
-              }}
-              className="w-6 h-6"
-            />
-          </View>
+const QuizItem = ({ quiz }: { quiz: QuizType }) => {
+  const handleQuizPress = () => {
+    router.push({
+      pathname: "/archive/quiz",
+      params: {
+        quizId: quiz.id,
+        title: quiz.title || "Quiz",
+      },
+    });
+  };
 
-          <VStack className="flex-1">
-            <Text className="font-semibold text-gray-900 text-base mb-1">
-              {quiz.title}
-            </Text>
-            <Text className="text-gray-600 text-sm">
-              {quiz.questionCount} multiple-choice questions
-            </Text>
-          </VStack>
+  console.log("Quiz Item Rendered:", quiz);
+
+  return (
+    <TouchableOpacity className="mb-4" onPress={handleQuizPress}>
+      <Card className="bg-orange-50 p-4 rounded-xl border border-orange-200">
+        <HStack className="items-center justify-between flex flex-row">
+          <HStack className="items-center space-x-4 flex flex-row gap-3">
+            <View className="w-16 h-16 bg-orange-100 rounded-xl justify-center items-center">
+              <Text style={{ fontSize: 24 }}>📝</Text>
+            </View>
+
+            <VStack className="flex-1">
+              <Text className="font-semibold text-gray-900 text-lg mb-1">
+                {quiz.title || "Quiz"}
+              </Text>
+              <Text className="text-gray-600 text-sm">
+                {quiz.quizQuestions?.length || 10} questions
+              </Text>
+            </VStack>
+          </HStack>
         </HStack>
-
-        <ChevronRight size={20} color="#6B7280" />
-      </HStack>
-    </Card>
-  </TouchableOpacity>
-);
+      </Card>
+    </TouchableOpacity>
+  );
+};
 
 // Section Header Component
 const SectionHeader = ({
@@ -205,8 +293,6 @@ const StudyKitHeader = ({ studyKit }: { studyKit: StudyKit }) => (
 export default function ArchiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [studyKit, setStudyKit] = React.useState<StudyKit | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchStudyKit = async () => {
@@ -218,9 +304,7 @@ export default function ArchiveDetailScreen() {
         const res = await axios.get(`${apiUrl}/study-kit/${id}`, { headers });
         setStudyKit(res.data.data);
       } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
-        );
+        console.error("Error fetching study kit:", error);
       }
     };
 
@@ -240,10 +324,6 @@ export default function ArchiveDetailScreen() {
       </SafeAreaView>
     );
   }
-
-  const handleStartChat = () => {
-    router.push(`/chat/${studyKit.id}`);
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -281,20 +361,18 @@ export default function ArchiveDetailScreen() {
               title="Flashcards"
               actionText="View All Flashcards"
             />
-            <HStack className="space-x-4">
+            <VStack className="space-y-4">
               {studyKit.flashcards?.length &&
               studyKit.flashcards?.length > 0 ? (
                 studyKit.flashcards?.map((flashcard: any) => (
-                  <View key={flashcard.id} className="flex-1">
-                    <FlashcardSet flashcard={flashcard} />
-                  </View>
+                  <FlashcardSet key={flashcard.id} flashcard={flashcard} />
                 ))
               ) : (
                 <Text className="text-gray-500 text-center">
                   No flashcards available
                 </Text>
               )}
-            </HStack>
+            </VStack>
           </VStack>
 
           {/* Line Separator */}
@@ -306,7 +384,7 @@ export default function ArchiveDetailScreen() {
           <VStack>
             <SectionHeader title="Quiz" actionText="View All Quiz" />
             {studyKit.quizzes?.length && studyKit.quizzes?.length > 0 ? (
-              studyKit.quizzes?.map((quiz: any) => (
+              studyKit.quizzes?.map((quiz: QuizType) => (
                 <QuizItem key={quiz.id} quiz={quiz} />
               ))
             ) : (

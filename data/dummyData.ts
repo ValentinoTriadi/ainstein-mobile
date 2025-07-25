@@ -6,24 +6,33 @@ export interface Comment {
 }
 
 export interface VideoType {
-	id: string;
-	title: string;
-	url: string;
-	description: string;
-	uploaderName: string;
-	uploaderAvatar: string;
-	likesCount: number;
-	isLiked: boolean;
-	comments: Comment[];
-	thumbnailUrl?: string;
-	like?: number;
-	uploadedAt?: string;
+  id: string;
+  title: string;
+  url: string;
+  description: string;
+  uploaderName: string;
+  uploaderAvatar: string;
+  likesCount: number;
+  isLiked: boolean;
+  comments: Comment[];
+  thumbnailUrl?: string;
+  like?: number;
+  uploadedAt?: string;
 }
 
 export interface QuizType {
   id: string;
   title: string;
-  questionCount: number;
+  description: string;
+  quizQuestions?: {
+    id: string;
+    questionText: string;
+    quizAnswers: {
+      id: string;
+      answerText: string;
+      isCorrect: boolean;
+    }[];
+  }[];
 }
 
 export interface FlashCardType {

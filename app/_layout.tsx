@@ -43,6 +43,10 @@ export default function RootLayout() {
               name="archive/video-player"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="archive/quiz"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />
