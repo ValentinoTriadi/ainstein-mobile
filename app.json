@@ -39,6 +39,7 @@
 			"typedRoutes": true
 		},
 		"extra": {
+			"apiUrl": "https://api-ainstein.vtriadi.site/api",
 			"authUrl": "https://api-ainstein.vtriadi.site"
 		}
 	}

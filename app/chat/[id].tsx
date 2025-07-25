@@ -1,470 +1,475 @@
-import { ChatMessage, getChatById } from "@/data/dummyData";
-import { Button, Input, InputField } from "@gluestack-ui/themed";
+import {
+	Drawer,
+	DrawerBackdrop,
+	DrawerBody,
+	DrawerContent,
+} from "@/components/ui/drawer";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
+import { ChatMessage } from "@/data/dummyData";
+import { Button } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Send } from "lucide-react-native";
+import Markdown from "react-native-markdown-display";
+import {
+	ArrowLeft,
+	Camera,
+	File,
+	Image as ImageIcon,
+	Layers,
+	Plus,
+	FileText as QuizIcon,
+	Send,
+	Video,
+} from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	Dimensions,
 	FlatList,
 	KeyboardAvoidingView,
 	Platform,
-	StatusBar as RNStatusBar,
-	StyleSheet,
 	Text,
+	TextInput,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-// Custom iOS-style Status Bar
-const CustomStatusBar = () => (
-  <View style={styles.statusBarContainer}>
-    <View style={styles.statusBarFrame}>
-      <View style={styles.statusBarTimeContainer}>
-        <Text style={styles.statusBarTime}>9:41</Text>
-      </View>
-      <View style={styles.statusBarSpacer} />
-      <View style={styles.statusBarLevels}>
-        <View style={styles.statusBarCellular} />
-        <View style={styles.statusBarWifi} />
-        <View style={styles.statusBarBatteryBox}>
-          <View style={styles.statusBarBatteryBorder} />
-          <View style={styles.statusBarBatteryCap} />
-          <View style={styles.statusBarBatteryCapacity} />
-        </View>
-      </View>
-    </View>
-  </View>
-);
-
-// Chat Header Component
-const ChatHeader = ({ title }: { title: string }) => (
-  <View style={styles.headerContainer}>
-    <View style={styles.headerFrame}>
-      <Button onPress={() => router.back()} style={styles.headerBackBtn}>
-        <ArrowLeft size={24} color="#1C1C1C" />
-      </Button>
-      <Text style={styles.headerTitle} numberOfLines={1}>
-        {title}
-      </Text>
-      <View style={styles.headerRightIcon} />
-    </View>
-  </View>
-);
+import axios from "axios";
+import Constants from "expo-constants";
+import { authClient } from "@/lib/auth";
 
 // Message Bubble Component
 const MessageBubble = ({ message }: { message: ChatMessage }) => {
-  const isUser = message.speaker === "user";
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-  return (
-    <View
-      style={[
-        styles.bubbleRow,
-        isUser ? { justifyContent: "flex-end" } : { justifyContent: "flex-start" },
-      ]}
-    >
-      <View
-        style={[
-          styles.bubble,
-          isUser ? styles.bubbleUser : styles.bubbleAI,
-        ]}
-      >
-        <Text style={isUser ? styles.bubbleUserText : styles.bubbleAIText}>
-          {message.messageText}
-        </Text>
-      </View>
-      <Text style={styles.bubbleTime}>{formatTime(message.timestamp)}</Text>
-    </View>
-  );
+	const isUser = message.speaker === "user";
+	const formatTime = (timestamp: string) => {
+		const date = new Date(timestamp);
+		return date.toLocaleTimeString("en-US", {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: true,
+		});
+	};
+	return (
+		<HStack
+			className={`mb-4 px-4 w-full ${isUser ? "justify-end" : "justify-start"}`}
+		>
+			<VStack className="max-w-[80%]">
+				<View
+					className={`px-4 py-3 rounded-2xl ${
+						isUser
+							? "bg-[#FAF2E0] rounded-br-md rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl"
+							: "bg-[#FFF3D8] rounded-bl-md rounded-tl-2xl rounded-tr-2xl rounded-br-2xl"
+					}`}
+				>
+					<Markdown>{message.messageText}</Markdown>
+				</View>
+				<Text
+					className="text-xs text-gray-500 mt-1 ml-2"
+					style={{ fontFamily: "Manrope" }}
+				>
+					{formatTime(message.timestamp)}
+				</Text>
+			</VStack>
+		</HStack>
+	);
 };
 
+// Chat Header Component
+const ChatHeader = ({ title }: { title: string }) => (
+	<VStack>
+		<HStack className="px-6 pt-4 pb-3 items-center justify-between">
+			<Button onPress={() => router.back()} className="p-2 bg-transparent">
+				<ArrowLeft size={24} color="#1C1C1C" />
+			</Button>
+			<Text
+				className="text-center font-bold"
+				style={{
+					fontFamily: "Manrope",
+					fontSize: 18,
+					lineHeight: 25,
+					color: "#1C1C1C",
+				}}
+				numberOfLines={1}
+			>
+				{title}
+			</Text>
+			<View style={{ width: 24, height: 24, opacity: 0 }} />
+		</HStack>
+	</VStack>
+);
+
 // Message Input Component
-const MessageInput = ({ onSendMessage }: { onSendMessage: (message: string) => void }) => {
-  const [message, setMessage] = useState("");
-  const handleSend = () => {
-    if (message.trim()) {
-      onSendMessage(message.trim());
-      setMessage("");
-    }
-  };
-  return (
-    <View style={styles.inputBarContainer}>
-      <Text style={styles.inputBarLabel}>Ask Anything</Text>
-      <View style={styles.inputBarRow}>
-        <Input style={styles.inputBarInput}>
-          <InputField
-            placeholder="Type your message..."
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            textAlignVertical="top"
-            maxLength={500}
-            style={{ color: "#fff" }}
-          />
-        </Input>
-        <Button
-          onPress={handleSend}
-          isDisabled={!message.trim()}
-          style={[
-            styles.inputBarSendBtn,
-            { backgroundColor: message.trim() ? "#fff" : "#444" },
-          ]}
-        >
-          <Send size={20} color={message.trim() ? "#1C1C1C" : "#fff"} />
-        </Button>
-      </View>
-    </View>
-  );
+const MessageInput = ({
+	onSendMessage,
+}: { onSendMessage: (message: string) => void }) => {
+	const [message, setMessage] = useState("");
+	const [showDrawer, setShowDrawer] = useState(false);
+	const handleSend = () => {
+		if (message.trim()) {
+			onSendMessage(message.trim());
+			setMessage("");
+		}
+	};
+	return (
+		<>
+			<Drawer
+				isOpen={showDrawer}
+				onClose={() => setShowDrawer(false)}
+				size="lg"
+				anchor="bottom"
+				closeOnOverlayClick={true}
+			>
+				<DrawerBackdrop />
+				<DrawerContent
+					className="bg-[#1C1C1C] rounded-t-2xl px-0 pt-0 pb-0"
+					style={{ height: 492, alignItems: "center", padding: 20 }}
+				>
+					{/* Drag handle */}
+					<View
+						style={{
+							width: 100,
+							height: 4,
+							backgroundColor: "#fff",
+							borderRadius: 10,
+							marginVertical: 12,
+							alignSelf: "center",
+						}}
+					/>
+					<DrawerBody
+						className="w-full"
+						contentContainerStyle={{ alignItems: "center", gap: 20 }}
+					>
+						{/* Upload row */}
+						<HStack
+							className="w-full justify-between"
+							style={{ gap: 12, paddingHorizontal: 16 }}
+						>
+							{/* Camera */}
+							<VStack
+								className="items-center justify-center"
+								style={{
+									width: 112.67,
+									height: 100,
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									padding: 10,
+									gap: 4,
+								}}
+							>
+								<Camera size={36} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Camera
+								</Text>
+							</VStack>
+							{/* Photos */}
+							<VStack
+								className="items-center justify-center"
+								style={{
+									width: 112.67,
+									height: 100,
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									paddingVertical: 19,
+									paddingHorizontal: 16,
+									gap: 4,
+								}}
+							>
+								<ImageIcon size={36} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Photos
+								</Text>
+							</VStack>
+							{/* Files */}
+							<VStack
+								className="items-center justify-center"
+								style={{
+									width: 112.67,
+									height: 100,
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									paddingVertical: 19,
+									paddingHorizontal: 16,
+									gap: 4,
+								}}
+							>
+								<File size={36} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Files
+								</Text>
+							</VStack>
+						</HStack>
+						{/* Divider */}
+						<View
+							style={{
+								width: 362,
+								height: 0,
+								borderBottomWidth: 0.5,
+								borderColor: "rgba(255,255,255,0.24)",
+								marginVertical: 8,
+							}}
+						/>
+						{/* Action list */}
+						<VStack
+							className="w-full"
+							style={{
+								gap: 12,
+								width: "100%",
+								justifyContent: "center",
+								alignItems: "center",
+							}}
+						>
+							{/* Create Video */}
+							<HStack
+								className="items-center"
+								style={{
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									padding: 12,
+									gap: 10,
+									width: 362,
+									height: 48,
+								}}
+							>
+								<Video size={24} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Create Video
+								</Text>
+							</HStack>
+							{/* Create Quiz */}
+							<HStack
+								className="items-center"
+								style={{
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									padding: 12,
+									gap: 10,
+									width: 362,
+									height: 48,
+								}}
+							>
+								<QuizIcon size={24} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Create Quiz
+								</Text>
+							</HStack>
+							{/* Create Flashcard */}
+							<HStack
+								className="items-center"
+								style={{
+									backgroundColor: "rgba(255,255,255,0.12)",
+									borderRadius: 12,
+									padding: 12,
+									gap: 10,
+									width: 362,
+									height: 48,
+								}}
+							>
+								<Layers size={24} color="#fff" />
+								<Text
+									style={{
+										color: "#fff",
+										fontFamily: "Manrope",
+										fontWeight: "500",
+										fontSize: 16,
+										lineHeight: 22,
+									}}
+								>
+									Create Flashcard
+								</Text>
+							</HStack>
+						</VStack>
+					</DrawerBody>
+				</DrawerContent>
+			</Drawer>
+			<VStack className="bg-[#1C1C1C] rounded-t-xl px-5">
+				<TextInput
+					placeholder="Ask Anything"
+					placeholderTextColor="rgba(255,255,255,0.5)"
+					value={message}
+					onChangeText={setMessage}
+					multiline
+					style={{
+						color: "#fff",
+						fontFamily: "Manrope",
+						fontWeight: "500",
+						fontSize: 16,
+						lineHeight: 22,
+						paddingVertical: 0,
+						minHeight: 36,
+						backgroundColor: "transparent",
+						paddingHorizontal: 12,
+						borderTopLeftRadius: 12,
+						borderTopRightRadius: 12,
+					}}
+				/>
+				<HStack
+					className="items-center justify-between mt-3"
+					style={{ gap: 12 }}
+				>
+					<Button
+						onPress={() => setShowDrawer(true)}
+						className="rounded-full"
+						style={{
+							width: 36,
+							height: 36,
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						<Plus size={32} color="#fff" />
+					</Button>
+					<Button
+						onPress={handleSend}
+						isDisabled={!message.trim()}
+						className="rounded-full"
+						style={{
+							width: 36,
+							height: 36,
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						<Send size={28} color={message.trim() ? "#1C1C1C" : "#fff"} />
+					</Button>
+				</HStack>
+			</VStack>
+		</>
+	);
 };
 
 // Main Chat Detail Screen Component
 export default function ChatDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chat, setChat] = useState<any>(null);
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [chatTitle, setChatTitle] = useState<string>("");
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (id) {
-      const foundChat = getChatById(id);
-      if (foundChat) {
-        setChat(foundChat);
-        setMessages(foundChat.messages);
-      }
-    }
-  }, [id]);
+	React.useEffect(() => {
+		const fetchConversationHistory = async () => {
+			if (!id) return;
+			setLoading(true);
+			setError(null);
+			try {
+				const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+				if (!apiUrl) throw new Error("API URL not configured");
+				const cookies = authClient.getCookie();
+				const headers = {
+					Cookie: cookies,
+				};
+				const res = await axios.get(`${apiUrl}/conversation/${id}/history`, {
+					headers: headers,
+				});
+				const history = res.data.data || [];
+				setMessages(
+					history.map((msg: any) => ({
+						id: msg.id,
+						speaker: msg.speaker,
+						messageText: msg.messageText,
+						timestamp: msg.timestamp,
+					})),
+				);
+				// Optionally fetch conversation title if needed (not in history response)
+				// setChatTitle(...)
+			} catch (err: any) {
+				setError(err.message || "Unknown error");
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchConversationHistory();
+	}, [id]);
 
-  const handleSendMessage = (messageText: string) => {
-    const newMessage: ChatMessage = {
-      id: `m${Date.now()}`,
-      speaker: "user",
-      messageText,
-      timestamp: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: `m${Date.now() + 1}`,
-        speaker: "ai",
-        messageText: `Thanks for your question! I'm here to help you with ${chat?.studyKitTitle}. Let me think about that...`,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 1000);
-  };
+	const handleSendMessage = (messageText: string) => {
+		const newMessage: ChatMessage = {
+			id: `m${Date.now()}`,
+			speaker: "user",
+			messageText,
+			timestamp: new Date().toISOString(),
+		};
+		setMessages((prev) => [...prev, newMessage]);
+		// Optionally: send message to backend here
+	};
 
-  if (!chat) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFCF5", justifyContent: "center", alignItems: "center", borderRadius: 12 }}>
-        <Text style={{ color: "#888" }}>Chat not found</Text>
-      </SafeAreaView>
-    );
-  }
+	if (loading) {
+		return (
+			<SafeAreaView className="flex-1 bg-[#FFFCF5] justify-center items-center rounded-xl">
+				<Text style={{ color: "#888" }}>Loading conversation...</Text>
+			</SafeAreaView>
+		);
+	}
 
-  return (
-    <View style={styles.outerContainer}>
-      <RNStatusBar barStyle="dark-content" backgroundColor="#FFFCF5" />
-      <CustomStatusBar />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <SafeAreaView style={styles.innerContainer}>
-          <ChatHeader title={chat.studyKitTitle} />
-          <FlatList
-            data={messages}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <MessageBubble message={item} />}
-            style={styles.messagesList}
-            contentContainerStyle={{ paddingVertical: 16 }}
-            showsVerticalScrollIndicator={false}
-            inverted={false}
-          />
-          <MessageInput onSendMessage={handleSendMessage} />
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </View>
-  );
+	if (error) {
+		return (
+			<SafeAreaView className="flex-1 bg-[#FFFCF5] justify-center items-center rounded-xl">
+				<Text style={{ color: "#888" }}>Error: {error}</Text>
+			</SafeAreaView>
+		);
+	}
+
+	return (
+		<SafeAreaView className="flex-1 bg-[#FFFCF5] rounded-xl min-h-full">
+			<KeyboardAvoidingView
+				className="flex-1"
+				behavior={Platform.OS === "ios" ? "padding" : "height"}
+			>
+				{/* Header */}
+				<ChatHeader title={chatTitle || "Chat"} />
+				{/* Messages */}
+				<FlatList
+					data={messages}
+					keyExtractor={(item) => item.id}
+					renderItem={({ item }) => <MessageBubble message={item} />}
+					className="flex-1"
+					contentContainerStyle={{ paddingVertical: 16 }}
+					showsVerticalScrollIndicator={false}
+					inverted={false}
+				/>
+				{/* Message Input */}
+				<SafeAreaView
+					className="translate-y-10 rounded-t-3xl"
+					style={{ backgroundColor: "#1C1C1C" }}
+				>
+					<MessageInput onSendMessage={handleSendMessage} />
+				</SafeAreaView>
+			</KeyboardAvoidingView>
+		</SafeAreaView>
+	);
 }
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: "#FFFCF5",
-    borderRadius: 12,
-    width: SCREEN_WIDTH,
-    minHeight: 874,
-    alignSelf: "center",
-  },
-  innerContainer: {
-    flex: 1,
-    backgroundColor: "#FFFCF5",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  statusBarContainer: {
-    width: 402,
-    height: 50,
-    backgroundColor: "#FFFCF5",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    position: "absolute",
-    top: 0,
-    left: 0,
-    zIndex: 10,
-    paddingTop: 21,
-    paddingBottom: 0,
-    alignItems: "flex-start",
-  },
-  statusBarFrame: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: 402,
-    height: 22,
-    paddingHorizontal: 0,
-    gap: 134,
-  },
-  statusBarTimeContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingLeft: 16,
-    width: 139,
-    height: 22,
-  },
-  statusBarTime: {
-    fontFamily: "System",
-    fontWeight: "600",
-    fontSize: 17,
-    lineHeight: 22,
-    textAlign: "center",
-    color: "#1C1C1C",
-    width: 37,
-    height: 22,
-  },
-  statusBarSpacer: {
-    width: 124,
-    height: 10,
-  },
-  statusBarLevels: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingRight: 16,
-    width: 139,
-    height: 13,
-    gap: 7,
-  },
-  statusBarCellular: {
-    width: 19.2,
-    height: 12.23,
-    backgroundColor: "#1C1C1C",
-    borderRadius: 2,
-  },
-  statusBarWifi: {
-    width: 17.14,
-    height: 12.33,
-    backgroundColor: "#1C1C1C",
-    borderRadius: 2,
-    marginLeft: 7,
-  },
-  statusBarBatteryBox: {
-    width: 27.33,
-    height: 13,
-    position: "relative",
-    marginLeft: 7,
-  },
-  statusBarBatteryBorder: {
-    position: "absolute",
-    width: 25,
-    height: 13,
-    left: 0,
-    top: 0,
-    borderWidth: 1,
-    borderColor: "#1C1C1C",
-    borderRadius: 4.3,
-    opacity: 0.35,
-  },
-  statusBarBatteryCap: {
-    position: "absolute",
-    width: 1.33,
-    height: 6,
-    left: 25,
-    top: 3.5,
-    backgroundColor: "#1C1C1C",
-    opacity: 0.4,
-    borderRadius: 1,
-  },
-  statusBarBatteryCapacity: {
-    position: "absolute",
-    width: 21,
-    height: 7,
-    left: 2,
-    top: 3,
-    backgroundColor: "#1C1C1C",
-    borderRadius: 2.5,
-  },
-  headerContainer: {
-    marginTop: 50,
-    width: 402,
-    height: 56,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    zIndex: 5,
-  },
-  headerFrame: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: 362,
-    height: 25,
-    marginHorizontal: 20,
-    marginTop: 20,
-  },
-  headerBackBtn: {
-    width: 24,
-    height: 24,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 0,
-  },
-  headerTitle: {
-    width: 135,
-    height: 25,
-    fontFamily: "Manrope",
-    fontWeight: "700",
-    fontSize: 18,
-    lineHeight: 25,
-    textAlign: "center",
-    color: "#1C1C1C",
-  },
-  headerRightIcon: {
-    width: 24,
-    height: 24,
-    opacity: 0,
-  },
-  messagesList: {
-    flex: 1,
-    paddingHorizontal: 0,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  bubbleRow: {
-    flexDirection: "column",
-    marginBottom: 16,
-    alignItems: "flex-start",
-    maxWidth: "100%",
-    paddingHorizontal: 20,
-  },
-  bubble: {
-    maxWidth: 269,
-    minHeight: 46,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
-  },
-  bubbleUser: {
-    backgroundColor: "#FAF2E0",
-    alignSelf: "flex-end",
-    borderTopRightRadius: 12,
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 4,
-  },
-  bubbleAI: {
-    backgroundColor: "#FFF3D8",
-    alignSelf: "flex-start",
-    borderTopRightRadius: 12,
-    borderTopLeftRadius: 12,
-    borderBottomRightRadius: 12,
-    borderBottomLeftRadius: 4,
-  },
-  bubbleUserText: {
-    color: "#1C1C1C",
-    fontFamily: "Manrope",
-    fontSize: 16,
-    fontWeight: "400",
-    lineHeight: 22,
-  },
-  bubbleAIText: {
-    color: "#1C1C1C",
-    fontFamily: "Manrope",
-    fontSize: 16,
-    fontWeight: "400",
-    lineHeight: 22,
-  },
-  bubbleTime: {
-    fontSize: 12,
-    color: "#888",
-    marginLeft: 8,
-    marginTop: 2,
-    alignSelf: "flex-end",
-  },
-  inputBarContainer: {
-    backgroundColor: "#1C1C1C",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    width: 403,
-    alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 24,
-    marginBottom: 0,
-  },
-  inputBarLabel: {
-    color: "rgba(255,255,255,0.5)",
-    fontFamily: "Manrope",
-    fontWeight: "500",
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  inputBarRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    width: 363,
-    height: 36,
-  },
-  inputBarInput: {
-    flex: 1,
-    backgroundColor: "#222",
-    borderRadius: 8,
-    color: "#fff",
-    height: 36,
-    paddingHorizontal: 12,
-    marginRight: 12,
-  },
-  inputBarSendBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 0,
-  },
-});
-

@@ -20,8 +20,6 @@ import {
 
 import { useRouter } from "expo-router";
 
-const authUrl = Constants.expoConfig?.extra?.authUrl;
-
 export default function LoginScreen() {
 	const router = useRouter();
 	const [fontsLoaded] = useFonts({
@@ -33,7 +31,6 @@ export default function LoginScreen() {
 
 	const handleGoogleLogin = async () => {
 		try {
-			console.log("Login button pressed.", authUrl);
 			setLoading(true);
 
 			await authClient.signIn.social({
