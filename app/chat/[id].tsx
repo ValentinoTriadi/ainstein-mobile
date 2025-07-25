@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/drawer";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
-import { ChatMessage } from "@/data/dummyData";
 import { Button } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
 import Markdown from "react-native-markdown-display";
@@ -21,7 +20,7 @@ import {
 	Send,
 	Video,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	FlatList,
 	KeyboardAvoidingView,
@@ -29,47 +28,55 @@ import {
 	Text,
 	TextInput,
 	View,
+	Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 import Constants from "expo-constants";
 import { authClient } from "@/lib/auth";
+import { generateAPIUrl } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
+import { fetch as expoFetch } from "expo/fetch";
 
-// Message Bubble Component
-const MessageBubble = ({ message }: { message: ChatMessage }) => {
-	const isUser = message.speaker === "user";
-	const formatTime = (timestamp: string) => {
-		const date = new Date(timestamp);
-		return date.toLocaleTimeString("en-US", {
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: true,
-		});
-	};
-	return (
-		<HStack
-			className={`mb-4 px-4 w-full ${isUser ? "justify-end" : "justify-start"}`}
-		>
-			<VStack className="max-w-[80%]">
-				<View
-					className={`px-4 py-3 rounded-2xl ${
-						isUser
-							? "bg-[#FAF2E0] rounded-br-md rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl"
-							: "bg-[#FFF3D8] rounded-bl-md rounded-tl-2xl rounded-tr-2xl rounded-br-2xl"
-					}`}
-				>
-					<Markdown>{message.messageText}</Markdown>
-				</View>
-				<Text
-					className="text-xs text-gray-500 mt-1 ml-2"
-					style={{ fontFamily: "Manrope" }}
-				>
-					{formatTime(message.timestamp)}
-				</Text>
-			</VStack>
-		</HStack>
-	);
-};
+// Message Bubble Component - Optimized with React.memo
+const MessageBubble = React.memo(
+	({ message }: { message: { id: string; role: string; content: string } }) => {
+		const isUser = message.role === "user";
+
+		return (
+			<HStack
+				className={`mb-4 px-4 w-full ${isUser ? "justify-end" : "justify-start"}`}
+			>
+				{/* AI Avatar - only show for AI messages */}
+				{!isUser && (
+					<View className="mr-3 mt-1">
+						<Image
+							source={require("@/assets/images/ainstein-logo.png")}
+							style={{
+								width: 32,
+								height: 32,
+								borderRadius: 16,
+							}}
+							resizeMode="cover"
+						/>
+					</View>
+				)}
+
+				<VStack className="max-w-[80%]">
+					<View
+						className={`px-4 py-3 rounded-2xl ${
+							isUser
+								? "bg-[#FAF2E0] rounded-br-md rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl"
+								: "bg-[#FFF3D8] rounded-bl-md rounded-tl-2xl rounded-tr-2xl rounded-br-2xl"
+						}`}
+					>
+						<Markdown>{message.content}</Markdown>
+					</View>
+				</VStack>
+			</HStack>
+		);
+	},
+);
 
 // Chat Header Component
 const ChatHeader = ({ title }: { title: string }) => (
@@ -97,14 +104,24 @@ const ChatHeader = ({ title }: { title: string }) => (
 
 // Message Input Component
 const MessageInput = ({
-	onSendMessage,
-}: { onSendMessage: (message: string) => void }) => {
-	const [message, setMessage] = useState("");
+	input,
+	handleInputChange,
+	handleSubmit,
+	isLoading,
+	onCreateQuiz,
+	isCreatingQuiz,
+}: {
+	input: string;
+	handleInputChange: (e: any) => void;
+	handleSubmit: (e?: any) => void;
+	isLoading?: boolean;
+	onCreateQuiz?: () => void;
+	isCreatingQuiz?: boolean;
+}) => {
 	const [showDrawer, setShowDrawer] = useState(false);
 	const handleSend = () => {
-		if (message.trim()) {
-			onSendMessage(message.trim());
-			setMessage("");
+		if (input.trim()) {
+			handleSubmit();
 		}
 	};
 	return (
@@ -265,30 +282,43 @@ const MessageInput = ({
 								</Text>
 							</HStack>
 							{/* Create Quiz */}
-							<HStack
-								className="items-center"
-								style={{
-									backgroundColor: "rgba(255,255,255,0.12)",
-									borderRadius: 12,
-									padding: 12,
-									gap: 10,
-									width: 362,
-									height: 48,
+							<Button
+								onPress={() => {
+									if (onCreateQuiz) {
+										setShowDrawer(false);
+										onCreateQuiz();
+									}
 								}}
+								isDisabled={isCreatingQuiz}
+								className="bg-transparent p-0"
+								style={{ width: 362, height: 48 }}
 							>
-								<QuizIcon size={24} color="#fff" />
-								<Text
+								<HStack
+									className="items-center"
 									style={{
-										color: "#fff",
-										fontFamily: "Manrope",
-										fontWeight: "500",
-										fontSize: 16,
-										lineHeight: 22,
+										backgroundColor: "rgba(255,255,255,0.12)",
+										borderRadius: 12,
+										padding: 12,
+										gap: 10,
+										width: 362,
+										height: 48,
+										opacity: isCreatingQuiz ? 0.6 : 1,
 									}}
 								>
-									Create Quiz
-								</Text>
-							</HStack>
+									<QuizIcon size={24} color="#fff" />
+									<Text
+										style={{
+											color: "#fff",
+											fontFamily: "Manrope",
+											fontWeight: "500",
+											fontSize: 16,
+											lineHeight: 22,
+										}}
+									>
+										{isCreatingQuiz ? "Creating Quiz..." : "Create Quiz"}
+									</Text>
+								</HStack>
+							</Button>
 							{/* Create Flashcard */}
 							<HStack
 								className="items-center"
@@ -320,11 +350,14 @@ const MessageInput = ({
 			</Drawer>
 			<VStack className="bg-[#1C1C1C] rounded-t-xl px-5">
 				<TextInput
-					placeholder="Ask Anything"
+					placeholder={isLoading ? "AI is thinking..." : "Ask Anything"}
 					placeholderTextColor="rgba(255,255,255,0.5)"
-					value={message}
-					onChangeText={setMessage}
+					value={input}
+					onChangeText={(text) =>
+						handleInputChange({ target: { value: text } } as any)
+					}
 					multiline
+					editable={!isLoading}
 					style={{
 						color: "#fff",
 						fontFamily: "Manrope",
@@ -337,6 +370,7 @@ const MessageInput = ({
 						paddingHorizontal: 12,
 						borderTopLeftRadius: 12,
 						borderTopRightRadius: 12,
+						opacity: isLoading ? 0.6 : 1,
 					}}
 				/>
 				<HStack
@@ -345,28 +379,30 @@ const MessageInput = ({
 				>
 					<Button
 						onPress={() => setShowDrawer(true)}
+						isDisabled={isLoading}
 						className="rounded-full"
 						style={{
 							width: 36,
 							height: 36,
 							justifyContent: "center",
 							alignItems: "center",
+							opacity: isLoading ? 0.6 : 1,
 						}}
 					>
 						<Plus size={32} color="#fff" />
 					</Button>
 					<Button
 						onPress={handleSend}
-						isDisabled={!message.trim()}
 						className="rounded-full"
 						style={{
 							width: 36,
 							height: 36,
 							justifyContent: "center",
 							alignItems: "center",
+							opacity: 1,
 						}}
 					>
-						<Send size={28} color={message.trim() ? "#1C1C1C" : "#fff"} />
+						<Send size={28} color={"#fff"} />
 					</Button>
 				</HStack>
 			</VStack>
@@ -377,12 +413,14 @@ const MessageInput = ({
 // Main Chat Detail Screen Component
 export default function ChatDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [chatTitle, setChatTitle] = useState<string>("");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [initialMessages, setInitialMessages] = useState<any[]>([]);
+	const [isCreatingQuiz, setIsCreatingQuiz] = useState(false);
 
-	React.useEffect(() => {
+	// Fetch conversation history and set up useChat
+	useEffect(() => {
 		const fetchConversationHistory = async () => {
 			if (!id) return;
 			setLoading(true);
@@ -398,15 +436,15 @@ export default function ChatDetailScreen() {
 					headers: headers,
 				});
 				const history = res.data.data || [];
-				setMessages(
-					history.map((msg: any) => ({
-						id: msg.id,
-						speaker: msg.speaker,
-						messageText: msg.messageText,
-						timestamp: msg.timestamp,
-					})),
-				);
-				// Optionally fetch conversation title if needed (not in history response)
+				// Convert to AI SDK format
+				const formattedMessages = history.map((msg: any) => ({
+					id: msg.id,
+					role: msg.speaker === "user" ? "user" : "assistant",
+					content: msg.messageText,
+					createdAt: new Date(msg.timestamp),
+				}));
+				setInitialMessages(formattedMessages);
+				// Optionally fetch conversation title if needed
 				// setChatTitle(...)
 			} catch (err: any) {
 				setError(err.message || "Unknown error");
@@ -417,16 +455,82 @@ export default function ChatDetailScreen() {
 		fetchConversationHistory();
 	}, [id]);
 
-	const handleSendMessage = (messageText: string) => {
-		const newMessage: ChatMessage = {
-			id: `m${Date.now()}`,
-			speaker: "user",
-			messageText,
-			timestamp: new Date().toISOString(),
-		};
-		setMessages((prev) => [...prev, newMessage]);
-		// Optionally: send message to backend here
+	// Handle quiz creation
+	const handleCreateQuiz = async () => {
+		if (!id || isCreatingQuiz) return;
+		
+		setIsCreatingQuiz(true);
+		try {
+			const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+			if (!apiUrl) throw new Error("API URL not configured");
+			
+			const cookies = authClient.getCookie();
+			const headers = {
+				Cookie: cookies,
+				'Content-Type': 'application/json',
+			};
+
+			const payload = {
+				questionCount: 5, // Default number of questions
+			};
+
+			const response = await axios.post(
+				`${apiUrl}/conversation/${id}/quiz`,
+				payload,
+				{ headers }
+			);
+
+			const quiz = response.data.data;
+			
+			// Navigate to quiz page with the generated quiz ID
+			router.push({
+				pathname: "/archive/quiz",
+				params: {
+					quizId: quiz.quizId,
+				},
+			});
+		} catch (err: any) {
+			console.error("Error creating quiz:", err);
+			// You might want to show an error toast/alert here
+		} finally {
+			setIsCreatingQuiz(false);
+		}
 	};
+
+	// Use AI SDK's useChat hook
+	const {
+		messages,
+		input,
+		handleInputChange,
+		handleSubmit,
+		isLoading: sendingMessage,
+		error: chatError,
+	} = useChat({
+		fetch: expoFetch as unknown as typeof globalThis.fetch,
+		api: generateAPIUrl(`/conversation/${id}/chat`),
+		initialMessages,
+		headers: {
+			Cookie: authClient.getCookie(),
+		},
+		onError: (error) => {
+			console.error("Chat error:", error);
+		},
+	});
+
+	// Optimized render functions for FlatList performance
+	const renderMessage = React.useCallback(
+		({ item }: { item: any }) => <MessageBubble message={item} />,
+		[],
+	);
+
+	const getItemLayout = React.useCallback(
+		(data: any, index: number) => ({
+			length: 90, // Approximate height of each message (increased for avatar)
+			offset: 90 * index,
+			index,
+		}),
+		[],
+	);
 
 	if (loading) {
 		return (
@@ -436,10 +540,12 @@ export default function ChatDetailScreen() {
 		);
 	}
 
-	if (error) {
+	if (error || chatError) {
 		return (
 			<SafeAreaView className="flex-1 bg-[#FFFCF5] justify-center items-center rounded-xl">
-				<Text style={{ color: "#888" }}>Error: {error}</Text>
+				<Text style={{ color: "#888" }}>
+					Error: {error || chatError?.message}
+				</Text>
 			</SafeAreaView>
 		);
 	}
@@ -456,18 +562,30 @@ export default function ChatDetailScreen() {
 				<FlatList
 					data={messages}
 					keyExtractor={(item) => item.id}
-					renderItem={({ item }) => <MessageBubble message={item} />}
+					renderItem={renderMessage}
 					className="flex-1"
 					contentContainerStyle={{ paddingVertical: 16 }}
 					showsVerticalScrollIndicator={false}
 					inverted={false}
+					removeClippedSubviews={true}
+					maxToRenderPerBatch={10}
+					windowSize={10}
+					initialNumToRender={10}
+					getItemLayout={getItemLayout}
 				/>
 				{/* Message Input */}
 				<SafeAreaView
 					className="translate-y-10 rounded-t-3xl"
 					style={{ backgroundColor: "#1C1C1C" }}
 				>
-					<MessageInput onSendMessage={handleSendMessage} />
+					<MessageInput
+						input={input}
+						handleInputChange={handleInputChange}
+						handleSubmit={handleSubmit}
+						isLoading={sendingMessage}
+						onCreateQuiz={handleCreateQuiz}
+						isCreatingQuiz={isCreatingQuiz}
+					/>
 				</SafeAreaView>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
