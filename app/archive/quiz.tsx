@@ -1,3 +1,4 @@
+import { QuizType } from "@/data/dummyData";
 import { authClient } from "@/lib/auth";
 import { HStack, VStack } from "@gluestack-ui/themed";
 import axios from "axios";
@@ -28,9 +29,8 @@ interface QuizData {
 }
 
 export default function QuizScreen() {
-  const { quizId, title } = useLocalSearchParams<{
+  const { quizId } = useLocalSearchParams<{
     quizId: string;
-    title: string;
   }>();
 
   const [quiz, setQuiz] = useState<QuizData | null>(null);
@@ -51,7 +51,20 @@ export default function QuizScreen() {
         const headers = { Cookie: cookies };
 
         const res = await axios.get(`${apiUrl}/quiz/${quizId}`, { headers });
-        const quizData = res.data.data;
+        const quizRespons: QuizType = res.data.data;
+        const quizData: QuizData = {
+          id: quizRespons.id,
+          title: quizRespons.title,
+          questions:
+            quizRespons.quizQuestions?.map((q) => ({
+              id: q.id,
+              question: q.questionText,
+              options: q.quizAnswers.map((a) => a.answerText),
+              correctAnswer: q.quizAnswers.findIndex((a) => a.isCorrect),
+            })) || [],
+        };
+
+        console.log("Fetched quiz data:", quizData);
 
         setQuiz(quizData);
         setAnswers(new Array(quizData.questions.length).fill(null));
@@ -60,7 +73,7 @@ export default function QuizScreen() {
         // Fallback with dummy data for demo
         const dummyQuiz: QuizData = {
           id: quizId || "1",
-          title: title || "Basic Algebra",
+          title: "Title",
           questions: [
             {
               id: "q1",
@@ -86,7 +99,7 @@ export default function QuizScreen() {
     if (quizId) {
       fetchQuiz();
     }
-  }, [quizId, title]);
+  }, [quizId]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
@@ -173,7 +186,7 @@ export default function QuizScreen() {
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <VStack className="px-4 py-3 bg-white border-b border-gray-200">
-        <HStack className="items-center justify-between mb-4">
+        <HStack className="items-center justify-between mb-4 flex flex-row">
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color="#374151" />
           </TouchableOpacity>
@@ -215,9 +228,9 @@ export default function QuizScreen() {
                   : "bg-white border-gray-200"
               }`}
             >
-              <HStack className="items-center justify-between">
+              <HStack className="w-full items-center justify-between flex flex-row">
                 <Text
-                  className={`text-base font-medium ${
+                  className={`text-base font-medium max-w-[80%] ${
                     selectedAnswer === index
                       ? "text-orange-700"
                       : "text-gray-900"
@@ -235,7 +248,7 @@ export default function QuizScreen() {
           ))}
 
           {/* Navigation Buttons */}
-          <HStack className="justify-between items-center mt-6">
+          <HStack className="justify-between items-center mt-6 flex flex-row">
             <TouchableOpacity
               onPress={handlePrevious}
               disabled={currentQuestionIndex === 0}

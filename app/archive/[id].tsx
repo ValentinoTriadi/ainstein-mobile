@@ -34,7 +34,7 @@ const VideoItem = ({ video }: { video: VideoType }) => {
 
   return (
     <TouchableOpacity className="mb-4" onPress={handleVideoPress}>
-      <Card className="bg-white p-4 rounded-xl">
+      <Card className="bg-[#FFFCF5] p-4 rounded-xl">
         <VStack className="space-y-3 flex gap-3">
           <View className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
             <Image
@@ -181,8 +181,6 @@ const QuizItem = ({ quiz }: { quiz: QuizType }) => {
     });
   };
 
-  console.log("Quiz Item Rendered:", quiz);
-
   return (
     <TouchableOpacity className="mb-4" onPress={handleQuizPress}>
       <Card className="bg-orange-50 p-4 rounded-xl border border-orange-200">
@@ -326,9 +324,9 @@ export default function ArchiveDetailScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-[#FFFCF5]">
       {/* Header */}
-      <VStack className="px-4 py-3 items-center justify-start bg-white">
+      <VStack className="px-4 py-3 items-center justify-start bg-[#FFFCF5]">
         {/* Study Kit Header */}
         <StudyKitHeader studyKit={studyKit} />
       </VStack>
