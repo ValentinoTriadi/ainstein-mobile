@@ -1,5 +1,10 @@
 import { QuizType } from "@/data/dummyData";
 import { authClient } from "@/lib/auth";
+import {
+  Manrope_400Regular,
+  Manrope_700Bold,
+  useFonts,
+} from "@expo-google-fonts/manrope";
 import { HStack, VStack } from "@gluestack-ui/themed";
 import axios from "axios";
 import Constants from "expo-constants";
@@ -39,6 +44,11 @@ export default function QuizScreen() {
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [loading, setLoading] = useState(true);
   const [showResults, setShowResults] = useState(false);
+
+  useFonts({
+    Manrope_400Regular,
+    Manrope_700Bold,
+  });
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -139,7 +149,12 @@ export default function QuizScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#F97316" />
-        <Text className="mt-4 text-gray-600">Loading quiz...</Text>
+        <Text
+          className="mt-4 text-gray-600"
+          style={{ fontFamily: "Manrope_400Regular" }}
+        >
+          Loading quiz...
+        </Text>
       </SafeAreaView>
     );
   }
@@ -147,7 +162,12 @@ export default function QuizScreen() {
   if (!quiz) {
     return (
       <SafeAreaView className="flex-1 bg-white justify-center items-center">
-        <Text className="text-gray-600">Quiz not found</Text>
+        <Text
+          className="text-gray-600"
+          style={{ fontFamily: "Manrope_400Regular" }}
+        >
+          Quiz not found
+        </Text>
       </SafeAreaView>
     );
   }
@@ -160,17 +180,26 @@ export default function QuizScreen() {
           <View className="w-32 h-32 bg-green-100 rounded-full justify-center items-center mb-6">
             <Text style={{ fontSize: 48 }}>🎉</Text>
           </View>
-          <Text className="text-3xl font-bold text-gray-900 mb-2">
+          <Text
+            className="text-3xl font-bold text-gray-900 mb-2"
+            style={{ fontFamily: "Manrope_400Regular" }}
+          >
             Quiz Complete!
           </Text>
-          <Text className="text-xl text-gray-600 mb-8">
+          <Text
+            className="text-xl text-gray-600 mb-8"
+            style={{ fontFamily: "Manrope_400Regular" }}
+          >
             Your Score: {score}%
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
             className="bg-orange-500 px-8 py-4 rounded-xl"
           >
-            <Text className="text-white font-semibold text-lg">
+            <Text
+              className="text-white font-semibold text-lg"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
               Back to Study Kit
             </Text>
           </TouchableOpacity>
@@ -190,7 +219,10 @@ export default function QuizScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} color="#374151" />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-gray-900">
+          <Text
+            className="text-lg font-semibold text-gray-900"
+            style={{ fontFamily: "Manrope_400Regular" }}
+          >
             {quiz.title}
           </Text>
           <View /> {/* Spacer */}
@@ -203,7 +235,10 @@ export default function QuizScreen() {
             style={{ width: `${progress}%` }}
           />
         </View>
-        <Text className="text-sm text-gray-600 text-center">
+        <Text
+          className="text-sm text-gray-600 text-center"
+          style={{ fontFamily: "Manrope_400Regular" }}
+        >
           Question {currentQuestionIndex + 1} of {quiz.questions.length}
         </Text>
       </VStack>
@@ -211,7 +246,10 @@ export default function QuizScreen() {
       <View className="flex-1">
         {/* Question Area */}
         <ScrollView className="flex-1 p-6">
-          <Text className="text-xl font-semibold text-gray-900 leading-7 mb-8">
+          <Text
+            className="text-xl font-semibold text-gray-900 leading-7 mb-8"
+            style={{ fontFamily: "Manrope_400Regular" }}
+          >
             {currentQuestion.question}
           </Text>
         </ScrollView>
@@ -230,6 +268,7 @@ export default function QuizScreen() {
             >
               <HStack className="w-full items-center justify-between flex flex-row">
                 <Text
+                  style={{ fontFamily: "Manrope_400Regular" }}
                   className={`text-base font-medium max-w-[80%] ${
                     selectedAnswer === index
                       ? "text-orange-700"
@@ -257,6 +296,7 @@ export default function QuizScreen() {
               }`}
             >
               <Text
+                style={{ fontFamily: "Manrope_400Regular" }}
                 className={`font-semibold ${
                   currentQuestionIndex === 0 ? "text-gray-400" : "text-gray-700"
                 }`}
@@ -273,6 +313,7 @@ export default function QuizScreen() {
               }`}
             >
               <Text
+                style={{ fontFamily: "Manrope_400Regular" }}
                 className={`font-semibold ${
                   selectedAnswer === null ? "text-gray-400" : "text-white"
                 }`}

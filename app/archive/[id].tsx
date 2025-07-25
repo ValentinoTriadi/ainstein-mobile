@@ -1,5 +1,10 @@
 import { FlashCardType, QuizType, StudyKit, VideoType } from "@/data/dummyData";
 import { authClient } from "@/lib/auth";
+import {
+  Manrope_400Regular,
+  Manrope_700Bold,
+  useFonts,
+} from "@expo-google-fonts/manrope";
 import { Card, HStack, VStack } from "@gluestack-ui/themed";
 import axios from "axios";
 import Constants from "expo-constants";
@@ -34,7 +39,7 @@ const VideoItem = ({ video }: { video: VideoType }) => {
 
   return (
     <TouchableOpacity className="mb-4" onPress={handleVideoPress}>
-      <Card className="bg-[#FFFCF5] p-4 rounded-xl">
+      <Card className="bg-white p-4 rounded-xl">
         <VStack className="space-y-3 flex gap-3">
           <View className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
             <Image
@@ -54,10 +59,18 @@ const VideoItem = ({ video }: { video: VideoType }) => {
           </View>
 
           <VStack className="space-y-1">
-            <Text className="font-semibold text-gray-900 text-base">
+            <Text
+              className="font-semibold text-gray-900 text-base"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
               {video.title}
             </Text>
-            <Text className="text-gray-600 text-sm">{video.description}</Text>
+            <Text
+              className="text-gray-600 text-sm"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
+              {video.description}
+            </Text>
           </VStack>
         </VStack>
       </Card>
@@ -121,13 +134,22 @@ const FlashcardSet = ({ flashcard }: { flashcard: FlashCardType }) => {
               <View className="w-16 h-16 bg-yellow-100 rounded-xl justify-center items-center mb-3">
                 <Text style={{ fontSize: 24 }}>📚</Text>
               </View>
-              <Text className="font-bold text-gray-900 text-lg mb-2 text-center">
+              <Text
+                className="font-bold text-gray-900 text-lg mb-2 text-center"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 {flashcard.title}
               </Text>
-              <Text className="text-gray-700 text-base text-center leading-6">
+              <Text
+                className="text-gray-700 text-base text-center leading-6"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 {flashcard.frontText}
               </Text>
-              <Text className="text-yellow-600 text-xs mt-4 font-medium">
+              <Text
+                className="text-yellow-600 text-xs mt-4 font-medium"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 Tap to reveal answer
               </Text>
             </VStack>
@@ -149,16 +171,29 @@ const FlashcardSet = ({ flashcard }: { flashcard: FlashCardType }) => {
           <Card className="bg-green-50  p-4 rounded-xl border border-green-200 h-full">
             <VStack className="items-center justify-center h-full">
               <View className="w-16 h-16 bg-green-100 rounded-xl justify-center items-center mb-3">
-                <Text style={{ fontSize: 24 }}>✓</Text>
+                <Text
+                  style={{ fontSize: 24, fontFamily: "Manrope_400Regular" }}
+                >
+                  ✓
+                </Text>
               </View>
-              <Text className="font-bold text-gray-900 text-lg mb-2 text-center">
+              <Text
+                className="font-bold text-gray-900 text-lg mb-2 text-center"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 Answer
               </Text>
-              <Text className="text-gray-700 text-base text-center leading-6">
+              <Text
+                className="text-gray-700 text-base text-center leading-6"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 {flashcard.backText ||
                   "This is the answer to the flashcard question."}
               </Text>
-              <Text className="text-green-600 text-xs mt-4 font-medium">
+              <Text
+                className="text-green-600 text-xs mt-4 font-medium"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 Tap to flip back
               </Text>
             </VStack>
@@ -187,14 +222,22 @@ const QuizItem = ({ quiz }: { quiz: QuizType }) => {
         <HStack className="items-center justify-between flex flex-row">
           <HStack className="items-center space-x-4 flex flex-row gap-3">
             <View className="w-16 h-16 bg-orange-100 rounded-xl justify-center items-center">
-              <Text style={{ fontSize: 24 }}>📝</Text>
+              <Text style={{ fontSize: 24, fontFamily: "Manrope_400Regular" }}>
+                📝
+              </Text>
             </View>
 
             <VStack className="flex-1">
-              <Text className="font-semibold text-gray-900 text-lg mb-1">
+              <Text
+                className="font-semibold text-gray-900 text-lg mb-1"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 {quiz.title || "Quiz"}
               </Text>
-              <Text className="text-gray-600 text-sm">
+              <Text
+                className="text-gray-600 text-sm"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 {quiz.quizQuestions?.length || 10} questions
               </Text>
             </VStack>
@@ -216,10 +259,18 @@ const SectionHeader = ({
   actionText?: string;
 }) => (
   <HStack className="justify-between items-center mb-4 flex flex-row">
-    <Text className="text-xl font-bold text-gray-900">{title}</Text>
+    <Text
+      className="text-xl font-bold text-gray-900"
+      style={{ fontFamily: "Manrope_400Regular" }}
+    >
+      {title}
+    </Text>
     {actionText && (
       <TouchableOpacity>
-        <Text className="text-orange-500 text-sm font-medium">
+        <Text
+          className="text-orange-500 text-sm font-medium"
+          style={{ fontFamily: "Manrope_400Regular" }}
+        >
           {actionText}
         </Text>
       </TouchableOpacity>
@@ -240,34 +291,49 @@ const StudyKitHeader = ({ studyKit }: { studyKit: StudyKit }) => (
           />
         </View>
       </TouchableOpacity>
-      <Text className="text-gray-600 text-sm">
+      <Text
+        className="text-gray-600 text-sm"
+        style={{ fontFamily: "Manrope_400Regular" }}
+      >
         Created Thursday, 24 July 2025
       </Text>
     </HStack>
     <View className="bg-orange-100 p-6 rounded-3xl w-full flex flex-row items-center justify-between">
       <VStack className="flex">
-        <Text className="text-2xl font-bold text-gray-900 mb-2">
+        <Text
+          className="text-2xl font-bold text-gray-900 mb-2"
+          style={{ fontFamily: "Manrope_400Regular" }}
+        >
           {studyKit.title || "Math Study Kit"}
         </Text>
 
         <HStack className="items-center space-x-6 flex flex-row gap-2">
           <HStack className="items-center flex flex-row">
             <Play size={16} color="#6B7280" />
-            <Text className="text-gray-700 text-sm ml-1">
+            <Text
+              className="text-gray-700 text-sm ml-1"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
               {studyKit.videos?.length} Video
             </Text>
           </HStack>
 
           <HStack className="items-center flex flex-row">
             <FileText size={16} color="#6B7280" />
-            <Text className="text-gray-700 text-sm ml-1">
+            <Text
+              className="text-gray-700 text-sm ml-1"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
               {studyKit.flashcards?.length} Flashcards
             </Text>
           </HStack>
 
           <HStack className="items-center flex flex-row">
             <Brain size={16} color="#6B7280" />
-            <Text className="text-gray-700 text-sm ml-1">
+            <Text
+              className="text-gray-700 text-sm ml-1"
+              style={{ fontFamily: "Manrope_400Regular" }}
+            >
               {studyKit.quizzes?.length} Quiz
             </Text>
           </HStack>
@@ -291,6 +357,11 @@ const StudyKitHeader = ({ studyKit }: { studyKit: StudyKit }) => (
 export default function ArchiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [studyKit, setStudyKit] = React.useState<StudyKit | null>(null);
+
+  useFonts({
+    Manrope_400Regular,
+    Manrope_700Bold,
+  });
 
   React.useEffect(() => {
     const fetchStudyKit = async () => {
@@ -336,16 +407,39 @@ export default function ArchiveDetailScreen() {
         <VStack className="p-4 space-y-6">
           {/* Videos Section */}
           <VStack>
-            <SectionHeader title="Latest Videos" actionText="View All Videos" />
-            {studyKit.videos?.length && studyKit.videos?.length > 0 ? (
-              studyKit.videos?.map((video: any) => (
-                <VideoItem key={video.id} video={video} />
-              ))
-            ) : (
-              <Text className="text-gray-500 text-center">
-                No videos available
-              </Text>
-            )}
+            <SectionHeader title="Latest Videos" actionText="" />
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                flexDirection: "row",
+                paddingRight: 16,
+                gap: 16,
+              }}
+            >
+              {studyKit.videos?.length && studyKit.videos?.length > 0 ? (
+                studyKit.videos?.map((video: any) => (
+                  <View key={video.id} style={{ width: 280 }}>
+                    <VideoItem video={video} />
+                  </View>
+                ))
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{ fontFamily: "Manrope_400Regular" }}
+                    className="text-gray-500 text-center"
+                  >
+                    No videos available
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           </VStack>
 
           {/* Line Separator */}
@@ -355,22 +449,40 @@ export default function ArchiveDetailScreen() {
 
           {/* Flashcards Section */}
           <VStack>
-            <SectionHeader
-              title="Flashcards"
-              actionText="View All Flashcards"
-            />
-            <VStack className="space-y-4">
+            <SectionHeader title="Flashcards" actionText="" />
+            <ScrollView
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                flexDirection: "row",
+                paddingRight: 16,
+                gap: 16,
+              }}
+            >
               {studyKit.flashcards?.length &&
               studyKit.flashcards?.length > 0 ? (
                 studyKit.flashcards?.map((flashcard: any) => (
-                  <FlashcardSet key={flashcard.id} flashcard={flashcard} />
+                  <View key={flashcard.id} style={{ width: 280 }}>
+                    <FlashcardSet flashcard={flashcard} />
+                  </View>
                 ))
               ) : (
-                <Text className="text-gray-500 text-center">
-                  No flashcards available
-                </Text>
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    className="text-gray-500 text-center"
+                    style={{ fontFamily: "Manrope_400Regular" }}
+                  >
+                    No flashcards available
+                  </Text>
+                </View>
               )}
-            </VStack>
+            </ScrollView>
           </VStack>
 
           {/* Line Separator */}
@@ -380,13 +492,16 @@ export default function ArchiveDetailScreen() {
 
           {/* Quiz Section */}
           <VStack>
-            <SectionHeader title="Quiz" actionText="View All Quiz" />
+            <SectionHeader title="Quiz" actionText="" />
             {studyKit.quizzes?.length && studyKit.quizzes?.length > 0 ? (
               studyKit.quizzes?.map((quiz: QuizType) => (
                 <QuizItem key={quiz.id} quiz={quiz} />
               ))
             ) : (
-              <Text className="text-gray-500 text-center">
+              <Text
+                className="text-gray-500 text-center"
+                style={{ fontFamily: "Manrope_400Regular" }}
+              >
                 No quizzes available
               </Text>
             )}

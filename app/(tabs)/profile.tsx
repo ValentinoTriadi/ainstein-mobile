@@ -1,5 +1,5 @@
 import { dummyUserProfile } from "@/data/dummyData";
-import { Button, ButtonText, Divider, Heading } from "@gluestack-ui/themed";
+import { Divider, Heading } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
   Award,
@@ -272,10 +272,6 @@ export default function ProfileScreen() {
 
         {/* Actions */}
         <View className="mt-8 px-6">
-          <Button onPress={handleNavigateToAuth} className="bg-blue-500 mb-4">
-            <ButtonText className="text-white">Switch Account</ButtonText>
-          </Button>
-
           <TouchableOpacity
             onPress={handleLogout}
             className="py-3 items-center"
