@@ -2,7 +2,6 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconCustom } from '@/components/IconCustom';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthGuard } from '../../components/AuthGuard';

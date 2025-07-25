@@ -1,144 +1,242 @@
-import { Asset, getStudyKitById } from '@/data/dummyData';
+import { StudyKit, VideoType } from "@/data/dummyData";
+import { authClient } from "@/lib/auth";
+import { Card, HStack, VStack } from "@gluestack-ui/themed";
+import axios from "axios";
+import Constants from "expo-constants";
+import { router, useLocalSearchParams } from "expo-router";
+import { Brain, ChevronRight, FileText, Play } from "lucide-react-native";
+import React from "react";
 import {
-    Button,
-    ButtonText,
-    Card,
-    Heading,
-    HStack,
-    VStack
-} from '@gluestack-ui/themed';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, BookOpen, Brain, FileText, Play, Video } from 'lucide-react-native';
-import React from 'react';
-import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// Asset Item Component
-const AssetItem = ({ asset }: { asset: Asset }) => {
-  const getAssetIcon = () => {
-    switch (asset.type) {
-      case 'video':
-        return <Video size={24} color="#3B82F6" />;
-      case 'quiz':
-        return <Brain size={24} color="#10B981" />;
-      case 'flashcard':
-        return <FileText size={24} color="#F59E0B" />;
-      default:
-        return <BookOpen size={24} color="#6B7280" />;
-    }
-  };
-
-  const getAssetDetails = () => {
-    switch (asset.type) {
-      case 'video':
-        return 'Video content';
-      case 'quiz':
-        return `${asset.questionCount} questions`;
-      case 'flashcard':
-        return `${asset.flashcardCount} flashcards`;
-      default:
-        return 'Study material';
-    }
-  };
-
-  const handleAssetPress = () => {
-    switch (asset.type) {
-      case 'video':
-        Alert.alert('Video Player', `Playing: ${asset.title}\n\nIn a real app, this would open the video player.`);
-        break;
-      case 'quiz':
-        Alert.alert('Quiz', `Starting quiz: ${asset.title}\n\nIn a real app, this would open the quiz interface.`);
-        break;
-      case 'flashcard':
-        Alert.alert('Flashcards', `Opening flashcards: ${asset.title}\n\nIn a real app, this would open the flashcard viewer.`);
-        break;
-      default:
-        Alert.alert('Asset', `Opening: ${asset.title}`);
+// Video Item Component
+const VideoItem = ({ video }: { video: VideoType }) => {
+  const handleVideoPress = () => {
+    if (video.url) {
+      // Navigate to a full-screen video player screen
+      router.push({
+        pathname: "/archive/video-player",
+        params: {
+          videoUrl: video.url,
+          title: video.title || "Video",
+        },
+      });
     }
   };
 
   return (
-    <TouchableOpacity onPress={handleAssetPress} className="mb-3">
-      <Card className="bg-white shadow-sm p-4">
-        <HStack className="items-center space-x-4">
-          <View className="w-12 h-12 bg-gray-100 rounded-lg justify-center items-center">
-            {getAssetIcon()}
+    <TouchableOpacity className="mb-4" onPress={handleVideoPress}>
+      <Card className="bg-white shadow-sm p-4 rounded-xl">
+        <VStack className="space-y-3 flex gap-3">
+          <View className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden">
+            <Image
+              source={{
+                uri:
+                  video.thumbnailUrl ||
+                  "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-wX6HXxFT6sO1UhmXKDsZCrdlhrgMhm.png&w=320&q=75",
+              }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+            <View className="absolute inset-0 justify-center items-center">
+              <View className="w-12 h-12 bg-black bg-opacity-50 rounded-full justify-center items-center">
+                <Play size={20} color="#FFFFFF" />
+              </View>
+            </View>
           </View>
-          
-          <VStack className="flex-1">
+
+          <VStack className="space-y-1">
             <Text className="font-semibold text-gray-900 text-base">
-              {asset.title}
+              {video.title}
             </Text>
-            <Text className="text-gray-600 text-sm mt-1">
-              {getAssetDetails()}
-            </Text>
+            <Text className="text-gray-600 text-sm">{video.description}</Text>
           </VStack>
-          
-          <View className="w-8 h-8 bg-gray-100 rounded-full justify-center items-center">
-            <Play size={16} color="#6B7280" />
-          </View>
-        </HStack>
+        </VStack>
       </Card>
     </TouchableOpacity>
   );
 };
 
-// Assets Section Component
-const AssetsSection = ({ assets, type, title }: { 
-  assets: Asset[]; 
-  type: string; 
-  title: string;
-}) => {
-  const filteredAssets = assets.filter(asset => asset.type === type);
-  
-  if (filteredAssets.length === 0) return null;
+// Flashcard Set Component
+const FlashcardSet = ({ flashcard }: { flashcard: any }) => (
+  <TouchableOpacity className="mb-4">
+    <Card className="bg-yellow-50 shadow-sm p-4 rounded-xl border border-yellow-200">
+      <VStack className="items-center">
+        <View className="w-20 h-20 bg-yellow-100 rounded-xl justify-center items-center mb-3">
+          <Image
+            source={{
+              uri: "https://via.placeholder.com/80x80/FCD34D/FFFFFF?text=📚",
+            }}
+            className="w-12 h-12"
+          />
+        </View>
+        <Text className="font-semibold text-gray-900 text-base mb-1">
+          {flashcard.title}
+        </Text>
+        <Text className="text-gray-600 text-sm">
+          {flashcard.cardCount} Cards
+        </Text>
+      </VStack>
+    </Card>
+  </TouchableOpacity>
+);
 
-  return (
-    <VStack className="mb-6">
-      <HStack className="justify-between items-center mb-4">
-        <Text className="text-lg font-semibold text-gray-900">
-          {title}
-        </Text>
-        <Text className="text-sm text-gray-500">
-          {filteredAssets.length} item{filteredAssets.length !== 1 ? 's' : ''}
-        </Text>
+// Quiz Item Component
+const QuizItem = ({ quiz }: { quiz: any }) => (
+  <TouchableOpacity className="mb-4">
+    <Card className="bg-white shadow-sm p-4 rounded-xl">
+      <HStack className="items-center justify-between">
+        <HStack className="items-center space-x-4">
+          <View className="w-12 h-12 bg-blue-100 rounded-lg justify-center items-center">
+            <Image
+              source={{
+                uri: "https://via.placeholder.com/48x48/3B82F6/FFFFFF?text=📝",
+              }}
+              className="w-6 h-6"
+            />
+          </View>
+
+          <VStack className="flex-1">
+            <Text className="font-semibold text-gray-900 text-base mb-1">
+              {quiz.title}
+            </Text>
+            <Text className="text-gray-600 text-sm">
+              {quiz.questionCount} multiple-choice questions
+            </Text>
+          </VStack>
+        </HStack>
+
+        <ChevronRight size={20} color="#6B7280" />
       </HStack>
-      
-      {filteredAssets.map((asset) => (
-        <AssetItem key={asset.id} asset={asset} />
-      ))}
-    </VStack>
-  );
-};
+    </Card>
+  </TouchableOpacity>
+);
+
+// Section Header Component
+const SectionHeader = ({
+  title,
+  count,
+  actionText,
+}: {
+  title: string;
+  count?: number;
+  actionText?: string;
+}) => (
+  <HStack className="justify-between items-center mb-4 flex flex-row">
+    <Text className="text-xl font-bold text-gray-900">{title}</Text>
+    {actionText && (
+      <TouchableOpacity>
+        <Text className="text-orange-500 text-sm font-medium">
+          {actionText}
+        </Text>
+      </TouchableOpacity>
+    )}
+  </HStack>
+);
 
 // Study Kit Header Component
-const StudyKitHeader = ({ title, description }: { title: string; description: string }) => (
-  <VStack className="bg-white p-6 border-b border-gray-200">
-    <Heading className="text-2xl text-gray-900 mb-2">
-      {title}
-    </Heading>
-    <Text className="text-gray-600 text-base leading-6">
-      {description}
-    </Text>
-  </VStack>
+const StudyKitHeader = ({ studyKit }: { studyKit: StudyKit }) => (
+  <View>
+    <HStack className="flex flex-row items-end justify-between mb-4">
+      <TouchableOpacity onPress={() => router.back()} className="self-start">
+        <View className="w-10 h-10 bg-gray-100 rounded-full justify-center items-center">
+          <ChevronRight
+            size={20}
+            color="#374151"
+            style={{ transform: [{ rotate: "180deg" }] }}
+          />
+        </View>
+      </TouchableOpacity>
+      <Text className="text-gray-600 text-sm">
+        Created Thursday, 24 July 2025
+      </Text>
+    </HStack>
+    <View className="bg-orange-100 p-6 rounded-3xl w-full flex flex-row items-center justify-between">
+      <VStack className="flex">
+        <Text className="text-2xl font-bold text-gray-900 mb-2">
+          {studyKit.title || "Math Study Kit"}
+        </Text>
+
+        <HStack className="items-center space-x-6 flex flex-row gap-2">
+          <HStack className="items-center flex flex-row">
+            <Play size={16} color="#6B7280" />
+            <Text className="text-gray-700 text-sm ml-1">
+              {studyKit.videos?.length} Video
+            </Text>
+          </HStack>
+
+          <HStack className="items-center flex flex-row">
+            <FileText size={16} color="#6B7280" />
+            <Text className="text-gray-700 text-sm ml-1">
+              {studyKit.flashcards?.length} Flashcards
+            </Text>
+          </HStack>
+
+          <HStack className="items-center flex flex-row">
+            <Brain size={16} color="#6B7280" />
+            <Text className="text-gray-700 text-sm ml-1">
+              {studyKit.quizzes?.length} Quiz
+            </Text>
+          </HStack>
+        </HStack>
+      </VStack>
+
+      <View className="w-20 h-20 rounded-full overflow-hidden">
+        <Image
+          source={{
+            uri: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-WtpeH5DxhSrSLFsZ4I7JKJlS28wvU6.png&w=320&q=75",
+          }}
+          className="w-full h-full"
+          resizeMode="cover"
+        />
+      </View>
+    </View>
+  </View>
 );
 
 // Main Archive Detail Screen Component
 export default function ArchiveDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [studyKit, setStudyKit] = React.useState<any>(null);
+  const [studyKit, setStudyKit] = React.useState<StudyKit | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    const fetchStudyKit = async () => {
+      try {
+        const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+        if (!apiUrl) throw new Error("API URL not configured");
+        const cookies = authClient.getCookie();
+        const headers = { Cookie: cookies };
+        const res = await axios.get(`${apiUrl}/study-kit/${id}`, { headers });
+        setStudyKit(res.data.data);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred"
+        );
+      }
+    };
+
     if (id) {
-      const kit = getStudyKitById(id);
-      setStudyKit(kit);
+      fetchStudyKit();
     }
   }, [id]);
 
   if (!studyKit) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
-        <Text className="text-gray-500">Study kit not found</Text>
+        <ActivityIndicator
+          size="large"
+          color="orange"
+          style={{ marginLeft: 8 }}
+        />
       </SafeAreaView>
     );
   }
@@ -148,117 +246,77 @@ export default function ArchiveDetailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <VStack className="bg-white shadow-sm border-b border-gray-200">
-        <HStack className="px-4 py-3 items-center space-x-3">
-          <Button
-            onPress={() => router.back()}
-            className="p-2 bg-transparent"
-          >
-            <ArrowLeft size={24} color="#374151" />
-          </Button>
-          
-          <Text className="text-lg font-semibold text-gray-900 flex-1">
-            Study Kit Details
-          </Text>
-          
-          <Button
-            onPress={handleStartChat}
-            className="bg-blue-500 px-4 py-2"
-          >
-            <ButtonText className="text-white text-sm">
-              Chat
-            </ButtonText>
-          </Button>
-        </HStack>
+      <VStack className="px-4 py-3 items-center justify-start bg-white">
+        {/* Study Kit Header */}
+        <StudyKitHeader studyKit={studyKit} />
       </VStack>
 
-      {/* Content */}
-      <FlatList
-        data={[1]} // Single item to render the content
-        keyExtractor={() => 'content'}
-        renderItem={() => (
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Content */}
+        <VStack className="p-4 space-y-6">
+          {/* Videos Section */}
           <VStack>
-            {/* Study Kit Header */}
-            <StudyKitHeader 
-              title={studyKit.title} 
-              description={studyKit.description} 
-            />
-            
-            {/* Assets Content */}
-            <VStack className="p-6">
-              {/* Overview Stats */}
-              <VStack className="mb-6">
-                <Text className="text-lg font-semibold text-gray-900 mb-4">
-                  Study Materials Overview
-                </Text>
-                <HStack className="justify-between bg-white p-4 rounded-lg shadow-sm">
-                  <VStack className="items-center">
-                    <Text className="text-2xl font-bold text-blue-600">
-                      {studyKit.assets.filter((a: Asset) => a.type === 'video').length}
-                    </Text>
-                    <Text className="text-sm text-gray-600">Videos</Text>
-                  </VStack>
-                  <VStack className="items-center">
-                    <Text className="text-2xl font-bold text-green-600">
-                      {studyKit.assets.filter((a: Asset) => a.type === 'quiz').length}
-                    </Text>
-                    <Text className="text-sm text-gray-600">Quizzes</Text>
-                  </VStack>
-                  <VStack className="items-center">
-                    <Text className="text-2xl font-bold text-yellow-600">
-                      {studyKit.assets.filter((a: Asset) => a.type === 'flashcard').length}
-                    </Text>
-                    <Text className="text-sm text-gray-600">Flashcards</Text>
-                  </VStack>
-                </HStack>
-              </VStack>
-
-              {/* Assets Sections */}
-              <AssetsSection 
-                assets={studyKit.assets} 
-                type="video" 
-                title="📹 Videos" 
-              />
-              
-              <AssetsSection 
-                assets={studyKit.assets} 
-                type="quiz" 
-                title="🧠 Quizzes" 
-              />
-              
-              <AssetsSection 
-                assets={studyKit.assets} 
-                type="flashcard" 
-                title="📚 Flashcards" 
-              />
-
-              {/* Action Buttons */}
-              <VStack className="mt-6 space-y-3">
-                <Button
-                  onPress={handleStartChat}
-                  className="bg-blue-500 p-4"
-                >
-                  <ButtonText className="text-white font-semibold">
-                    💬 Start AI Chat Session
-                  </ButtonText>
-                </Button>
-                
-                <Button
-                  onPress={() => Alert.alert('Study Mode', 'Study mode would start a comprehensive session with all materials.')}
-                  className="bg-green-500 p-4"
-                >
-                  <ButtonText className="text-white font-semibold">
-                    🎯 Start Study Session
-                  </ButtonText>
-                </Button>
-              </VStack>
-            </VStack>
+            <SectionHeader title="Latest Videos" actionText="View All Videos" />
+            {studyKit.videos?.length && studyKit.videos?.length > 0 ? (
+              studyKit.videos?.map((video: any) => (
+                <VideoItem key={video.id} video={video} />
+              ))
+            ) : (
+              <Text className="text-gray-500 text-center">
+                No videos available
+              </Text>
+            )}
           </VStack>
-        )}
-        showsVerticalScrollIndicator={false}
-      />
+
+          {/* Line Separator */}
+          <View className="my-4">
+            <View className="h-px bg-gray-200" />
+          </View>
+
+          {/* Flashcards Section */}
+          <VStack>
+            <SectionHeader
+              title="Flashcards"
+              actionText="View All Flashcards"
+            />
+            <HStack className="space-x-4">
+              {studyKit.flashcards?.length &&
+              studyKit.flashcards?.length > 0 ? (
+                studyKit.flashcards?.map((flashcard: any) => (
+                  <View key={flashcard.id} className="flex-1">
+                    <FlashcardSet flashcard={flashcard} />
+                  </View>
+                ))
+              ) : (
+                <Text className="text-gray-500 text-center">
+                  No flashcards available
+                </Text>
+              )}
+            </HStack>
+          </VStack>
+
+          {/* Line Separator */}
+          <View className="my-4">
+            <View className="h-px bg-gray-200" />
+          </View>
+
+          {/* Quiz Section */}
+          <VStack>
+            <SectionHeader title="Quiz" actionText="View All Quiz" />
+            {studyKit.quizzes?.length && studyKit.quizzes?.length > 0 ? (
+              studyKit.quizzes?.map((quiz: any) => (
+                <QuizItem key={quiz.id} quiz={quiz} />
+              ))
+            ) : (
+              <Text className="text-gray-500 text-center">
+                No quizzes available
+              </Text>
+            )}
+          </VStack>
+        </VStack>
+      </ScrollView>
     </SafeAreaView>
   );
-} 
+}

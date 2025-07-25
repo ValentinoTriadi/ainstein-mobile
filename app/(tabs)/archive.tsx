@@ -157,8 +157,9 @@ const CreateStudyKitModal = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert("Error", "Please enter a title for your study kit");
       return;
@@ -168,7 +169,9 @@ const CreateStudyKitModal = ({
       return;
     }
 
-    onSubmit({
+    setLoading(true);
+
+    await onSubmit({
       title: title.trim(),
       description: description.trim(),
       imageUrl:
@@ -176,6 +179,7 @@ const CreateStudyKitModal = ({
         "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-tWzpxAsZMig9oMkoGuBbUJaWvug4ZL.png&w=320&q=75",
     });
 
+    setLoading(false);
     // Reset form
     setTitle("");
     setDescription("");
@@ -232,6 +236,7 @@ const CreateStudyKitModal = ({
               paddingVertical: 8,
               borderRadius: 8,
             }}
+            disabled={loading}
           >
             <Text
               style={{
@@ -241,7 +246,15 @@ const CreateStudyKitModal = ({
                 fontFamily: "Manrope_700Bold",
               }}
             >
-              Create
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color="white"
+                  style={{ marginLeft: 8 }}
+                />
+              ) : (
+                "Create"
+              )}
             </Text>
           </TouchableOpacity>
         </View>
@@ -511,8 +524,6 @@ export default function ArchiveScreen() {
       );
 
       if (response.data && response.data.data) {
-        console.log("Study Kit before:", studyKits);
-        console.log("Study Kit created:", response.data);
         // Add the new study kit to the local state
         setStudyKits((prev) => [response.data.data, ...prev]);
         Alert.alert("Success", "Study kit created successfully!");
@@ -539,7 +550,7 @@ export default function ArchiveScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-[#FFFCF5]">
       {/* Header */}
       <VStack>
         <View className="px-6 pt-4">
