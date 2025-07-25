@@ -39,8 +39,8 @@
 			"typedRoutes": true
 		},
 		"extra": {
-			"apiUrl": "http://172.20.10.2:5050/api",
-			"authUrl": "http://172.20.10.2:5050"
+			"apiUrl": "https://api-ainstein.vtriadi.site/api",
+			"authUrl": "https://api-ainstein.vtriadi.site"
 		}
 	}
 }
